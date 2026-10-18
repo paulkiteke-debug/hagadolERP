@@ -1,0 +1,1 @@
+ALTER TABLE `crm_import_batches` ADD `kind` text DEFAULT 'Contacts' NOT NULL;
