@@ -1,7 +1,7 @@
 import {AccessError,fingerprint} from './security';
 import type {Access} from './access-policy';
 
-export const importKinds=['Cash in','Cash out','Client receipt','Company account funding','Debt balance','Debt payment','Expected receipt','Loan proceeds','Pending balance','Personal funding','Salary schedule','Unpriced item'];
+export const importKinds=['Invoice','Supplier bill','Cash in','Cash out','Client receipt','Company account funding','Debt balance','Debt payment','Expected receipt','Loan proceeds','Pending balance','Personal funding','Salary schedule','Unpriced item'];
 export const importCompanies=['Hagadol','WMK','Shared','Unassigned'];
 export type ImportRow={id:string;source_sheet:string;source_row:number;source_cell:string;date:string;period:string;date_basis:string;company:string;company_original:string;kind:string;description:string;category:string;amount_UGX:number|null;currency_basis:string;review:string;posting_status:string;possible_duplicates:string;project?:string;total_fees_UGX?:number|null;paid_UGX?:number|null;due_original?:string;cash_type_original?:string;record_status?:string};
 export function importAccess(a:Access){return ['Owner','Administrator','Finance'].includes(a.role)&&['Hagadol','WMK'].every(c=>a.companies.includes(c));}
@@ -23,3 +23,7 @@ export function batchSpec(v:any){
  return {id:'fi_'+v.sourceHash,sourceHash:v.sourceHash,manifestHash:v.manifestHash,filename:v.filename,expectedRows:v.expectedRows};
 }
 export async function rowManifest(rows:{row_key:string;row_hash:string}[]){return fingerprint(rows.map(r=>[r.row_key,r.row_hash]).sort((a,b)=>a[0].localeCompare(b[0])));}
+
+// Call from an authenticated server route with getDb() and the current Access.
+export async function prepareImportPosting(...args:Parameters<typeof import('./finance-import-posting').prepareImportPosting>){return (await import('./finance-import-posting')).prepareImportPosting(...args);}
+export async function approveAndPostImport(...args:Parameters<typeof import('./finance-import-posting').approveAndPostImport>){return (await import('./finance-import-posting')).approveAndPostImport(...args);}

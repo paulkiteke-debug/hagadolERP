@@ -64,6 +64,20 @@
       "when": 1791918900651,
       "tag": "0008_tired_chat",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "6",
+      "when": 1792761067337,
+      "tag": "0009_crm_activity_timeline",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "6",
+      "when": 1792764806558,
+      "tag": "0010_finance_approval_metadata",
+      "breakpoints": true
     }
   ]
 }

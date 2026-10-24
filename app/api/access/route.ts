@@ -22,5 +22,5 @@ export async function POST(req:Request){try{
  const id=existing?.id||crypto.randomUUID(),action=existing?'Updated access':'Provisioned access';
  const statement=existing?d.prepare('UPDATE access_users SET role=?,companies=?,enabled=?,updated=? WHERE id=? AND role<>?').bind(values.role,JSON.stringify(values.companies),values.enabled,now,id,'Owner'):d.prepare('INSERT INTO access_users (id,user_id,email,role,companies,enabled,created,updated) VALUES (?,NULL,?,?,?,?,?,?)').bind(id,values.email,values.role,JSON.stringify(values.companies),values.enabled,now,now);
  await d.batch([statement,d.prepare('INSERT INTO security_events (id,actor,action,target,date) VALUES (?,?,?,?,?)').bind(crypto.randomUUID(),access.email,action+' · '+values.role+' · '+(values.enabled?'Active':'Disabled')+' · '+values.companies.join(', '),values.email,now)]);
- return securityReply({id,message:existing?'User access updated.':'User provisioned. The account must also be admitted by the site access policy.'});
+ return securityReply({id,message:existing?'User access updated.':'User provisioned. Sign in with this Google email to access the permitted companies.'});
 }catch(e){return securityFailure(e)}}

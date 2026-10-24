@@ -1,7 +1,9 @@
 import type {RecordRow,State} from './erp-engine';
+import {isModuleEnabled,fullWorkspace} from './module-profile';
 
 export const roles=['Owner','Administrator','Leadership','Finance','Sales','Operations','Marketing','Viewer','Office display'] as const;
 export type Role=typeof roles[number];
+export const activeRoles=roles.filter(role=>fullWorkspace||!['Operations','Marketing','Office display'].includes(role));
 export type Access={id:string;role:Role;companies:string[];email:string;name:string};
 export const modules=['Executive','CRM','Finance','EOS','Projects','Marketing','Email','OS','Documents','Settings','Office'] as const;
 export type Module=typeof modules[number];
@@ -20,6 +22,8 @@ export function recordModule(r:Pick<RecordRow,'type'>&{[key:string]:any}):Module
  return null;
 }
 export function canReadModule(a:Access,m:Module){
+ if(!activeRoles.includes(a.role))return false;
+ if(!isModuleEnabled(m))return false;
  if(full(a))return true;
  if(a.role==='Office display')return m==='Office';
  if(['Viewer','Leadership'].includes(a.role))return m!=='Settings';
@@ -27,6 +31,8 @@ export function canReadModule(a:Access,m:Module){
  return (allowed[a.role]||[]).includes(m);
 }
 export function canWriteModule(a:Access,m:Module){
+ if(!activeRoles.includes(a.role))return false;
+ if(!isModuleEnabled(m))return false;
  if(full(a))return true;
  const allowed:Record<string,Module[]>={Leadership:['EOS','OS','Documents','Projects'],Finance:['Finance'],Sales:['CRM','Finance','OS','Email'],Operations:['Projects','Documents'],Marketing:['Marketing','Email']};
  return (allowed[a.role]||[]).includes(m);
@@ -47,7 +53,8 @@ export function canWriteRecord(a:Access,r:RecordRow,action='edit',status?:string
 }
 export function scopeState(a:Access,s:State):State{
  const financial=canReadModule(a,'Finance')&&a.role!=='Sales';
- return {records:s.records.filter(r=>canReadRecord(a,r)),journal:financial?s.journal.filter(j=>a.companies.includes(j.company)):[],audit:full(a)?s.audit.filter(x=>a.companies.includes(x.company)):[]};
+ const records=s.records.filter(r=>canReadRecord(a,r)),visible=new Set(records.map(r=>r.id));
+ return {records,journal:financial?s.journal.filter(j=>a.companies.includes(j.company)):[],audit:full(a)?s.audit.filter(x=>a.companies.includes(x.company)&&(fullWorkspace||visible.has(x.record))):[]};
 }
 export function viewModule(view:string):Module{
  if(['Executive','Overview'].includes(view))return 'Executive';
@@ -59,4 +66,15 @@ export function viewModule(view:string):Module{
  if(view==='Hagadol OS')return 'OS';
  if(view==='Office display')return 'Office';
  return view as Module;
+}
+export const isViewEnabled=(view:string)=>isModuleEnabled(viewModule(view));
+export function activeState(s:State):State{
+ if(fullWorkspace)return s;
+ const records=s.records.filter(r=>{const module=recordModule(r);return module!==null&&isModuleEnabled(module)});
+ const visible=new Set(records.map(r=>r.id));
+ return {...s,records,audit:s.audit.filter(event=>visible.has(event.record))};
+}
+export function landingView(a:Access){
+ if(a.role==='Sales')return 'CRM';
+ return ['Executive','Finance','CRM','Projects','Marketing','Office display'].find(view=>canReadModule(a,viewModule(view)));
 }

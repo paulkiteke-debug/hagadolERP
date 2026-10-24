@@ -1,6 +1,6 @@
-# Hagadol ERP 1.3.0
+# Hagadol ERP 1.3.1
 
-Standard Next.js application for WMK and Hagadol, ready for Vercel or a Node.js server. This branch replaces Vinext and the Cloudflare Workers runtime. CRM, finance, EOS, projects, marketing and the office display retain their existing business rules.
+Standard Next.js application for WMK and Hagadol, ready for Vercel or a Node.js server. This branch replaces Vinext and the Cloudflare Workers runtime. Home, CRM, Finance and Settings are active. Other modules and their records are retained for later activation. See [release and update instructions](docs/CRM_FINANCE_RELEASE.md).
 
 ## Local setup
 
@@ -34,5 +34,7 @@ This source package does not contain credentials, a production database or custo
 ## QA
 
 Business tests use isolated SQLite fixtures and simulated identities. `test:runtime` also checks the real libSQL driver, atomic rollback, migration repeatability and the S3 adapter with a mocked transport. It does not contact the live ERP. See [validation results](docs/VERCEL_QA.md) for tested scope and remaining integration checks.
+
+Run `npm run test:core` to verify the current module restrictions. Legacy business and component tests explicitly exercise the retained full profile in isolated processes.
 
 Older release notes describe the previous hosting architecture and are historical.

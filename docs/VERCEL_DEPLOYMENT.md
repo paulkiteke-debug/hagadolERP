@@ -1,4 +1,6 @@
-# Vercel deployment: Hagadol ERP 1.3.0
+# Vercel deployment: Hagadol ERP 1.3.1
+
+The default release exposes Home, CRM, Finance and Settings. See [the current release instructions](CRM_FINANCE_RELEASE.md) for updating an existing installation and activating retained modules later.
 
 ## Architecture
 

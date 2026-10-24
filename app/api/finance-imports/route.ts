@@ -7,7 +7,7 @@ import {financeImportReader,financeImportWriter,authorisedImportSource} from '@/
 import {revisionMetadata,displayBatch} from '@/lib/finance-import-revisions';
 export const dynamic='force-dynamic';
 const cfg=()=>env as unknown as {DB:SQLDatabase;BUCKET:ObjectStore;ERP_OWNER_EMAIL?:string;FINANCE_IMPORT_KEY?:string;FINANCE_IMPORT_SOURCE_HASH?:string};
-const summarySQL='SELECT b.*,COUNT(r.row_key) saved_rows,v.replaces_batch_id,v.metadata,n.batch_id superseded_by FROM finance_import_batches b LEFT JOIN finance_import_rows r ON r.batch_id=b.id LEFT JOIN finance_import_revisions v ON v.batch_id=b.id LEFT JOIN finance_import_revisions n ON n.replaces_batch_id=b.id';
+const summarySQL='SELECT b.*,COUNT(r.row_key) saved_rows,p.status posting_status,p.approved_by,p.approved_at,v.replaces_batch_id,v.metadata,n.batch_id superseded_by FROM finance_import_batches b LEFT JOIN finance_import_reviews p ON p.import_id=b.id LEFT JOIN finance_import_rows r ON r.batch_id=b.id LEFT JOIN finance_import_revisions v ON v.batch_id=b.id LEFT JOIN finance_import_revisions n ON n.replaces_batch_id=b.id';
 export async function GET(req:Request){try{
  await financeImportReader(cfg(),req);const d=cfg().DB,url=new URL(req.url),id=url.searchParams.get('batch');
  if(!id){const result=await d.prepare(summarySQL+' GROUP BY b.id ORDER BY CASE WHEN n.batch_id IS NOT NULL THEN 2 WHEN b.status=\'Uploading\' THEN 1 ELSE 0 END,b.created DESC LIMIT 50').all<any>();return securityReply({batches:result.results.map(displayBatch)});}
@@ -23,7 +23,7 @@ export async function GET(req:Request){try{
 export async function POST(req:Request){try{
  const c=cfg(),auth=await financeImportWriter(c,req),d=c.DB,input:any=await jsonBody(req),spec=batchSpec(input);
  authorisedImportSource(auth,req,spec.sourceHash);
- const old:any=await d.prepare('SELECT * FROM finance_import_batches WHERE id=?').bind(spec.id).first();
+ const old=await d.prepare('SELECT b.*,p.status posting_status FROM finance_import_batches b LEFT JOIN finance_import_reviews p ON p.import_id=b.id WHERE b.id=?').bind(spec.id).first<{id:string;filename:string;expected_rows:number;manifest_hash:string;status:string;posting_status?:string}>();
  if(old&&(old.filename!==spec.filename||old.expected_rows!==spec.expectedRows||old.manifest_hash!==spec.manifestHash))throw new AccessError('This workbook already has different import details.',409);
  if(input.action==='activate_revision'){
   if(!old)throw new AccessError('Start the source import first.',409);
@@ -32,6 +32,7 @@ export async function POST(req:Request){try{
   const meta=revisionMetadata(input.metadata,rows.results.map((r:any)=>r.row_key)),pre=input.replaces;
   if(!pre||!/^fi_[a-f0-9]{64}$/.test(pre.id)||pre.id===spec.id||!/^[a-f0-9]{64}$/.test(pre.manifestHash))throw new AccessError('Choose the earlier source import to supersede.',400);
   const previous:any=await d.prepare('SELECT b.*,v.metadata FROM finance_import_batches b LEFT JOIN finance_import_revisions v ON v.batch_id=b.id WHERE b.id=?').bind(pre.id).first();
+  if(previous&&(await d.prepare("SELECT status FROM finance_import_reviews WHERE import_id=?").bind(pre.id).first<{status:string}>())?.status==='Posted')throw new AccessError('The earlier import has posted ledger entries. Use a controlled accounting correction instead of superseding it.',409);
   if(!previous||previous.status!=='Review'||previous.manifest_hash!==pre.manifestHash||(previous.metadata?JSON.parse(previous.metadata).originalSource.sha256:previous.source_hash)!==meta.originalSource.sha256)throw new AccessError('The earlier import does not match this source revision.',409);
   const files=await d.prepare('SELECT filename,sha256,bytes,object_key FROM finance_import_files WHERE batch_id=?').bind(spec.id).all<any>();
   if(files.results.length!==meta.files.length||meta.files.some(f=>!files.results.some((v:any)=>v.filename===f.filename&&v.sha256===f.sha256&&v.bytes===f.bytes)))throw new AccessError('Upload and verify all supporting files before activating the revision.',409);
@@ -49,7 +50,7 @@ export async function POST(req:Request){try{
   if(!old)throw new AccessError('Import not found.',404);
   const [revision,counts,files,rows,retired]=await Promise.all([d.prepare('SELECT * FROM finance_import_revisions WHERE batch_id=?').bind(spec.id).first<any>(),d.prepare('SELECT company,COUNT(*) count FROM finance_import_rows WHERE batch_id=? GROUP BY company').bind(spec.id).all<any>(),d.prepare('SELECT filename,sha256,bytes FROM finance_import_files WHERE batch_id=? ORDER BY filename').bind(spec.id).all<any>(),d.prepare('SELECT row_key,row_hash,payload FROM finance_import_rows WHERE batch_id=?').bind(spec.id).all<any>(),d.prepare('SELECT batch_id FROM finance_import_revisions WHERE replaces_batch_id=?').bind(spec.id).first<any>()]);
   const meta=revision?JSON.parse(revision.metadata):null;
-  return securityReply({id:spec.id,status:retired?'Superseded':old.status,count:rows.results.length,manifestHash:await rowManifest(rows.results),counts:counts.results,files:files.results,replaces:revision?.replaces_batch_id||null,reviewCounts:meta?{prepared:Object.values(meta.recordStatusById).filter(s=>s==='Prepared for staging').length,held:Object.values(meta.recordStatusById).filter(s=>s==='Hold for review').length}:null,checks:{duplicateRecords:rows.results.filter((r:any)=>JSON.parse(r.payload).possible_duplicates).length,missingAmounts:rows.results.filter((r:any)=>JSON.parse(r.payload).amount_UGX===null).length},ledgerPosting:'Not posted'});
+  return securityReply({id:spec.id,status:retired?'Superseded':old.status,count:rows.results.length,manifestHash:await rowManifest(rows.results),counts:counts.results,files:files.results,replaces:revision?.replaces_batch_id||null,reviewCounts:meta?{prepared:Object.values(meta.recordStatusById).filter(s=>s==='Prepared for staging').length,held:Object.values(meta.recordStatusById).filter(s=>s==='Hold for review').length}:null,checks:{duplicateRecords:rows.results.filter(r=>JSON.parse(r.payload).possible_duplicates).length,missingAmounts:rows.results.filter(r=>JSON.parse(r.payload).amount_UGX===null).length},ledgerPosting:old.posting_status==='Posted'?'Posted after approval':'Check Finance approval status'});
  }
  if(input.action==='verify'){
   if(!old)throw new AccessError('Import not found.',404);

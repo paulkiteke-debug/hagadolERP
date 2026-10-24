@@ -19,7 +19,7 @@ try{
   const page=await get(route);check(page.status===307&&page.headers.get('location')?.startsWith('/login?'),'Protected page redirects to login: '+route);
   check(/private|no-store/.test(page.headers.get('cache-control')||''),'Protected response cannot be shared cached: '+route);
  }
- for(const route of ['/api/erp','/api/access','/api/office','/api/release','/api/os-ai','/api/finance-imports','/api/finance-imports/files']){
+ for(const route of ['/api/finance-workflows','/api/crm','/api/erp','/api/access','/api/office','/api/release','/api/os-ai','/api/finance-imports','/api/finance-imports/files']){
   const reply=await get(route,{'x-oai-user-id':'forged-owner','x-oai-user-email':'owner@example.com','oai-authenticated-user-id':'forged-owner','oai-authenticated-user-email':'owner@example.com',cookie:'authjs.session-token=invalid'});
   check(reply.status===401,'Forged identity cannot access '+route);
   check(reply.headers.get('x-content-type-options')==='nosniff'&&reply.headers.get('cache-control')==='no-store','Security and cache headers on '+route);

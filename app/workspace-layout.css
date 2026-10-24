@@ -1,0 +1,140 @@
+/* Shared alignment rules for the CRM and Finance workspace. */
+.workspace main > *, .crmworkspace, .finance-workspace, .finance-planning,
+.homeworkspace, .settingsgrid > *, .crmdetailgrid > * { min-width: 0; }
+.workspace :is(input, select, textarea, button) { font-family: Tahoma; }
+.workspace :is(input, select, textarea) { max-width: 100%; }
+.workspace :is(.primary, .secondary, .iconbutton) { min-height: 44px; }
+.workspace .sectiontoolbar { row-gap: 16px; column-gap: 12px; }
+.workspace .sectiontoolbar > label { display: grid; gap: 8px; font-size: 12px; line-height: 1.5; min-width: 0; }
+.workspace .sectiontoolbar > label :is(input, select) { height: 44px; }
+.workspace .panelhead { align-items: flex-start; flex-wrap: wrap; }
+.workspace .panelhead > div:first-child { min-width: 0; }
+.workspace .panelhead .sectiontoolbar { margin-bottom: 0; }
+.workspace .panelhead :is(h2, h3, p) { overflow-wrap: anywhere; }
+
+/* Columns must fit their own grid tracks, including borders and padding. */
+.crmworkspace .kanban.crmboard {
+  --crm-stage-width: 280px;
+  display: grid;
+  grid-template-columns: none;
+  grid-auto-flow: column;
+  grid-auto-columns: var(--crm-stage-width);
+  align-items: start;
+  gap: 20px;
+  max-width: 100%;
+  min-width: 0;
+  padding: 4px 4px 20px;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x proximity;
+  scrollbar-width: auto;
+}
+.crmworkspace .crmboard:focus-visible { outline: 2px solid #264C5C; outline-offset: 3px; }
+.crmworkspace .crmboard > .kanbancol {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  padding: 0 16px 16px;
+  border: 1px solid rgba(38,76,92,.24);
+  border-top: 3px solid #264C5C;
+  border-radius: 4px;
+  scroll-snap-align: start;
+  min-height: 320px;
+}
+.crmboard .kanbancol > .crmcolumnhead {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 64px;
+  padding: 16px 0 8px;
+}
+.crmboard .crmcolumnhead > h3 {
+  min-width: 0;
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+.crmboard .crmcolumnhead > .crmstagecount {
+  flex: 0 0 auto;
+  min-width: 26px;
+  padding: 2px 6px;
+  border: 1px solid rgba(38,76,92,.24);
+  border-radius: 4px;
+  text-align: center;
+  font-size: 12px;
+  line-height: 1.5;
+  font-variant-numeric: tabular-nums;
+}
+.crmboard .kanbancol > .kanbantotal {
+  margin: 0 0 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(38,76,92,.18);
+  font-size: 12px;
+  line-height: 1.5;
+  font-variant-numeric: tabular-nums;
+}
+.crmboard .crmdeal { display: grid; gap: 12px; margin: 0 0 20px; padding: 0 0 20px; }
+.crmboard .crmdeal:last-of-type { margin-bottom: 0; padding-bottom: 0; border-bottom: 0; }
+.crmboard .crmdeal .dealcard { padding: 16px; margin: 0; min-width: 0; overflow-wrap: anywhere; }
+.crmboard .dealcard > small { font-size: 11px; line-height: 1.6; }
+.crmboard .dealcard > h3 { margin: 10px 0 8px; font-size: 14px; line-height: 1.5; }
+.crmboard .dealcard > strong { font-size: 17px; line-height: 1.4; letter-spacing: 0; margin: 12px 0 8px; font-variant-numeric: tabular-nums; }
+.crmboard .dealcard > p { line-height: 1.6; margin: 4px 0; }
+.crmboard .crmdeal > .crmstage { padding: 0; }
+.crmboard .crmdeal > .secondary { margin: 0; width: 100%; min-height: 44px; }
+.crmboard .kanbanempty { padding: 24px 8px; line-height: 1.6; }
+.crmworkspace .crmtoolbar { align-items: flex-end; gap: 12px; }
+.crmworkspace .crmtoolbar > label { line-height: 1.5; }
+.crmworkspace .crmtoolbar > label:first-child { flex: 1 1 280px; min-width: 180px; }
+.crmworkspace .crmtoolbar > label:not(:first-child) { flex: 0 0 124px; min-width: 0; }
+.crmworkspace .crmtoolbar > :is(button, details) { flex-shrink: 0; }
+.crmworkspace .crmtoolbar > button,
+.crmworkspace .crmtoolbar > details > summary,
+.crmworkspace .crmtoolbar > label :is(input, select) { height: 44px; min-height: 44px; }
+.crmworkspace .crmtoolbar .crmtools { margin-left: 0; }
+.crmworkspace .crmstats { gap: 24px; }
+.crmworkspace .crmstats > span { min-width: 0; display: flex; flex-direction: column; justify-content: space-between; gap: 12px; line-height: 1.6; }
+.crmworkspace .crmstats strong { margin-top: 0; line-height: 1.25; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+
+.workspace .tablebox { max-width: 100%; min-width: 0; }
+.workspace .tablebox table { width: 100%; border-collapse: collapse; }
+.workspace .tablebox :is(th, td) { text-align: left; line-height: 1.6; }
+.workspace .tablebox td { vertical-align: top; }
+.workspace .tablebox td :is(.rowlink, p, small) { overflow-wrap: anywhere; }
+.workspace .tablebox .rowlink { min-height: 44px; }
+.workspace .tablebox td .secondary { margin-top: 8px; }
+.workspace .finance-tabs { align-items: flex-end; row-gap: 12px; }
+.workspace .finance-tabs > button,
+.workspace .finance-tabs > .moremenu > summary { min-height: 44px; line-height: 1.5; }
+.workspace .moremenu > div { max-height: min(65vh, 480px); overflow-y: auto; }
+.workspace .finance-plan-heading { flex: 1 1 220px; }
+.workspace .finance-planning > .sectiontoolbar { align-items: flex-end; }
+.workspace .finance-business-tracks > div { flex-wrap: wrap; }
+.workspace .finance-party-form > form { padding: 20px 24px; }
+.workspace :is(.formgrid, .crmformgrid, .accessform) { align-items: start; }
+.workspace :is(.formgrid, .crmformgrid, .accessform) > label { min-width: 0; line-height: 1.5; }
+.workspace :is(.formgrid, .crmformgrid, .accessform) :is(input:not([type=checkbox]), select) { height: 44px; min-height: 44px; }
+.workspace .accessform fieldset { min-width: 0; padding: 12px 16px; border: 1px solid rgba(38,76,92,.24); }
+.workspace .accessform legend { padding: 0 4px; }
+.workspace :is(.homestats strong, .homeplans, .kpi strong) { font-variant-numeric: tabular-nums; }
+.workspace .homeplans > button { flex-wrap: wrap; min-height: 56px; }
+.workspace .workspacebanner { align-items: flex-start; flex-wrap: wrap; }
+.workspace .workspacefooter { flex-wrap: wrap; gap: 12px; line-height: 1.6; }
+
+@media (max-width: 900px) {
+  .crmworkspace .crmstats { grid-template-columns: repeat(2, minmax(0,1fr)); gap: 20px; }
+  .workspace .panelhead { gap: 16px; }
+}
+@media (max-width: 650px) {
+  .crmworkspace .kanban.crmboard { --crm-stage-width: 260px; gap: 16px; }
+  .crmworkspace .crmtoolbar > label:first-child { flex-basis: 100%; min-width: 0; }
+  .crmworkspace .crmtoolbar > label:not(:first-child) { flex: 1 1 104px; }
+  .crmworkspace .crmtoolbar > button { flex: 1 1 160px; }
+  .workspace .finance-party-form > form { padding: 16px; }
+  .workspace .sectiontoolbar > label { flex: 1 1 140px; }
+  .workspace .releasereadiness { overflow-x: auto; }
+  .workspace .releasereadiness table { min-width: 600px; }
+}

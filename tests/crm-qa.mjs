@@ -32,6 +32,8 @@ for(const company of ['Hagadol','WMK']){
  reject({action:'create',company,type:'task',name:'No due',owner:'Lead',crm:true},'Activity deadline required');
  reject({action:'create',company,type:'task',name:'Invalid time',owner:'Lead',due:day(),crm:true,activityTime:'25:90'},'Invalid activity time rejected');
  reject({action:'create',company,type:'task',name:'Mixed EOS',owner:'Lead',due:day(),crm:true,eos:true},'EOS and CRM flags cannot mix');
+ Object.assign(record(accounts[company]),{billingAddress:'Kampala',taxReference:'TEST TIN',billingVerification:{address:'Kampala',taxReference:'TEST TIN',verifiedBy:'QA',verifiedAt:new Date().toISOString()}});
+ run({action:'edit',id:deal,fields:{siteAssessmentAttachment:{name:'Survey.pdf',url:'https://example.com/survey.pdf'},technicalSiteSurvey:{reference:'TEST SURVEY',assessedOn:day(),assessedBy:'QA',findings:'QA evidence'},designBrief:'Client brief',contractMetadata:{reference:'TEST CONTRACT',signedOn:day(),clientName:'Client'},contractAttachment:{name:'Contract.pdf',url:'https://example.com/contract.pdf'}}});
  const version=record(deal).version;run({action:'stage',id:deal,status:'Won'});run({action:'edit',id:deal,fields:{notes:'Appointment signed'}});check(record(deal).status==='Won','Editing notes does not regress opportunity stage');
  reject({action:'edit',id:deal,expectedVersion:version,fields:{name:'Stale'}},'Stale opportunity edits rejected');
  run({action:'edit',id:deal,fields:{crmStage:'Negotiation'}});check(record(deal).status==='Negotiation','Stage can be edited atomically with opportunity fields');

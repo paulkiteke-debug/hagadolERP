@@ -64,3 +64,6 @@ export function planningProgress(state:State,company:string,period:ReturnType<ty
 }
 
 export type PlanningProgress={actual:ReturnType<typeof planningActuals>;pace:ReturnType<typeof planPace>;rows:{label:string;actual:number;target:number;expected:number;direction:string;variance:number;status:string}[];status:string;business:({company:string}&PlanningProgress)[];plannedProfit:number;plannedNetCash:number;minimumCash:number};
+
+export async function configureRevenueSchedule(...args:Parameters<typeof import('./finance-revenue').configureRevenueSchedule>){return (await import('./finance-revenue')).configureRevenueSchedule(...args);}
+export async function recognizeMilestoneRevenue(...args:Parameters<typeof import('./finance-revenue').recognizeMilestoneRevenue>){return (await import('./finance-revenue')).recognizeMilestoneRevenue(...args);}

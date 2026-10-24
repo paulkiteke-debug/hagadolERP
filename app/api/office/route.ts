@@ -5,9 +5,11 @@ import {authenticate,securityReply,securityFailure,AccessError} from '@/lib/secu
 import {read} from '@/lib/erp-store';
 import {resolveLinkedState} from '@/lib/metric-links';
 import {day} from '@/lib/erp-engine';
+import {isModuleEnabled} from '@/lib/module-profile';
 export const dynamic='force-dynamic';
 export async function GET(req:Request){try{
  const c=env as unknown as {DB:SQLDatabase;ERP_OWNER_EMAIL?:string};const {access}=await authenticate(c,req);
+ if(!isModuleEnabled('Office'))throw new AccessError('Office display is scheduled for a later release.');
  const requested=new URL(req.url).searchParams.get('company');if(requested&&requested!=='Group'&&!access.companies.includes(requested))throw new AccessError('This screen cannot access that company.');
  const s=await read(c.DB,access.companies);s.records=s.records.filter(r=>access.companies.includes(r.company));s.journal=s.journal.filter(j=>access.companies.includes(j.company));
  const allowed:Record<string,string[]>={field_activity:['publicNote','location','projectId'],project:['officeLabel','projectCode','projectKind','deliveryStage','lifecycleStage','gatesEnabled','owner','progress'],post:['source','channel','publicNote','publishedDate'],metric:['source','visits','leads','clicks','reach','periodStart'],scorecard:['actual','targetValue','direction','unit','period','periodStart','owner','metricPending','metricEvidence','metricAsOf'],rock:['owner','period','periodStart','progress']};

@@ -4,7 +4,7 @@ export type State={records:RecordRow[];journal:JournalRow[];audit:any[]};
 export const companies=['WMK','Hagadol'];
 export const stages=['New','Qualified','Quotation','Negotiation','Won','Lost'];
 export const cashAccounts=['Bank','Cash','Mobile money'];
-export const accounts=[...cashAccounts,'Accounts receivable','Inventory','Equipment','VAT recoverable','Accounts payable','VAT payable','Opening equity','Capital','Retained earnings','Sales revenue','Operating expenses','Interest expenses','Intercompany revenue','Intercompany expenses'];
+export const accounts=[...cashAccounts,'Accounts receivable','Inventory','Equipment','VAT recoverable','Accounts payable','VAT payable','Deferred revenue','Opening equity','Capital','Retained earnings','Sales revenue','Operating expenses','Interest expenses','Intercompany revenue','Intercompany expenses'];
 export const financial=['quote','invoice','bill','expense','credit','purchase_order'];
 export const recordTypes=['contact','deal','quote','invoice','bill','expense','campaign','post','metric','email','product','project','task','purchase_order','transfer','journal','reconciliation','loan','credit','member','setting','bid','proposal','field_activity','scorecard','rock','technical_log','eos_issue','eos_meeting','document','knowledge','project_gate','crm_company','budget','cash_plan'];
 export const day=()=>new Intl.DateTimeFormat('en-CA',{timeZone:'Africa/Kampala',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());

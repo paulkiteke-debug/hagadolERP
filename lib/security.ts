@@ -1,7 +1,7 @@
 import type {SQLDatabase} from '@/lib/storage-types';
 import type {ChatGPTUser} from '../app/chatgpt-auth';
 import {getChatGPTUser} from '../app/chatgpt-auth';
-import {roles,type Access,type Role} from './access-policy';
+import {roles,activeRoles,type Access,type Role} from './access-policy';
 
 export class AccessError extends Error{constructor(message:string,public status=403){super(message)}}
 export type SecurityConfig={DB:SQLDatabase;ERP_OWNER_EMAIL?:string};
@@ -21,6 +21,7 @@ export async function membership(c:SecurityConfig,u:ChatGPTUser):Promise<Access>
   r=await c.DB.prepare('SELECT * FROM access_users WHERE user_id=?').bind(u.userId).first();
  }
  if(!r||r.enabled!==1||!roles.includes(r.role))throw new AccessError('Your account has no active ERP access. Contact the workspace owner.');
+ if(!activeRoles.includes(r.role))throw new AccessError('Your role is scheduled for a later release. Contact the workspace owner for CRM or Finance access.');
  const a=member(r,u.displayName);if(!a.companies.length||a.companies.some(x=>!['WMK','Hagadol'].includes(x)))throw new AccessError('Your company access needs review. Contact the workspace owner.');return a;
 }
 export function verifyWrite(req:Request){
@@ -56,6 +57,7 @@ export async function fingerprint(input:unknown){
 export function accessValues(input:any):{email:string;role:Role;companies:string[];enabled:number}{
  const email=emailKey(String(input.email||''));if(email.length>254||!/^\S+@\S+\.\S+$/.test(email))throw new AccessError('Enter a valid email address.',400);
  if(!roles.includes(input.role)||input.role==='Owner')throw new AccessError('Choose a staff role. Ownership cannot be assigned here.',400);
+ if(input.enabled!==false&&!activeRoles.includes(input.role))throw new AccessError('Choose a role available for CRM and Finance.',400);
  if(!Array.isArray(input.companies)||!input.companies.length||input.companies.length>2||input.companies.some((x:any)=>!['WMK','Hagadol'].includes(x)))throw new AccessError('Choose WMK, Hagadol or both.',400);
  if(input.enabled!==undefined&&typeof input.enabled!=='boolean')throw new AccessError('Choose an active or disabled account.',400);
  return {email,role:input.role,companies:[...new Set(input.companies)] as string[],enabled:input.enabled===false?0:1};
