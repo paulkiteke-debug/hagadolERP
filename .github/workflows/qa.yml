@@ -31,6 +31,7 @@ jobs:
       - run: npm run test:core
       - run: npm run test:crm
       - run: npm run test:crm-workflow
+      - run: npm run test:crm-pipeline
       - run: npm run test:finance
       - run: npm run test:finance-posting
       - run: npm run test:finance-planning

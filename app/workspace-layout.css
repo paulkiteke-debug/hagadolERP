@@ -138,3 +138,141 @@
   .workspace .releasereadiness { overflow-x: auto; }
   .workspace .releasereadiness table { min-width: 600px; }
 }
+
+/* Daily entry refinements: shared rhythm, legible amounts and visible form actions. */
+.workspace :is(.crmresults, .financeresults) {
+  display: flex; align-items: center; flex-wrap: wrap; gap: 8px 20px;
+  padding: 0 0 16px; color: #264C5C; font-size: 13px; line-height: 1.6;
+}
+.workspace :is(.crmresults, .financeresults) p { margin: 0; }
+.workspace .crmresults > span { margin-left: auto; font-size: 12px; }
+.workspace :is(.crmresults, .financeresults) button { min-height: 44px; }
+.workspace .tablebox :is(th, td).numeric {
+  text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap;
+}
+.workspace :is(.crmworkspace, .finance-workspace) .tablebox {
+  overflow: auto; max-height: 65vh; overscroll-behavior: contain;
+}
+.workspace :is(.crmworkspace, .finance-workspace) .tablebox th {
+  position: sticky; top: 0; z-index: 1; background: #FFFFFF;
+  border-bottom: 2px solid #264C5C;
+}
+.workspace .finance-table :is(th, td):first-child {
+  min-width: 180px; max-width: 320px; white-space: normal; overflow-wrap: anywhere;
+}
+.workspace .finance-table :is(th, td):nth-child(3) {
+  max-width: 280px; white-space: normal; overflow-wrap: anywhere;
+}
+.workspace .finance-table :is(th, td).numeric { min-width: 140px; white-space: nowrap; }
+.workspace :is(.crmformfooter, .financeformfooter) {
+  display: flex; align-items: center; flex-wrap: wrap; gap: 12px;
+  border-top: 1px solid var(--border); padding-top: 16px; margin-top: 8px;
+}
+.workspace :is(.crmformfooter, .financeformfooter) > span {
+  flex: 1 1 180px; text-align: left; font-size: 13px; line-height: 1.6;
+}
+.workspace .crmform { max-width: 1080px; }
+.workspace .crmform input:required { border-left: 3px solid #264C5C; }
+.workspace :is(.crmformfooter, .financeformfooter) button:focus-visible {
+  outline: 2px solid #264C5C; outline-offset: 3px;
+}
+@media (max-width: 650px) {
+  .workspace .crmresults > span { width: 100%; margin-left: 0; }
+  .workspace :is(.crmformfooter, .financeformfooter) > span { flex-basis: 100%; }
+  .workspace :is(.crmformfooter, .financeformfooter) > button { flex: 1 1 140px; }
+  .workspace :is(.crmworkspace, .finance-workspace) .tablebox { max-height: 60vh; }
+}
+
+/* Compact pipeline workspace, using the supplied Bigin layout as reference. */
+.crmpipelineshell { display: grid; grid-template-columns: 180px minmax(0,1fr); gap: 20px; }
+.crmpipelinemain { min-width: 0; }
+.crmpipelinerail { border-right: 1px solid var(--border); padding-right: 12px; }
+.crmpipelinerail h2 { font-size: 14px; margin: 0 0 16px; }
+.crmpipelinerail nav { display: grid; gap: 4px; }
+.crmpipelinerail button { display: flex; justify-content: space-between; align-items: start; gap: 8px; width: 100%; min-height: 44px; padding: 10px 8px; text-align: left; font-size: 12px; color: #264C5C; border-left: 3px solid transparent; }
+.crmpipelinerail button.active { border-left-color: #0CADBB; font-weight: bold; }
+.crmpipelinerail span { min-width: 0; overflow-wrap: anywhere; }
+.crmpipelinerail span small { display: block; font-weight: normal; margin-top: 4px; }
+.crmpipelinerail > p { font-size: 12px; line-height: 1.7; margin-top: 24px; }
+.crmpipelinesummary { margin-bottom: 12px; }
+.crmpipelinesummary > summary { cursor: pointer; font-size: 12px; padding: 8px 0; min-height: 36px; }
+.crmpipelinesummary .crmstats { margin: 12px 0; }
+.crmpipelinemain .crmtoolbar { margin-bottom: 12px; }
+.crmpipelinemain .crmtoolbar > label:first-child { flex-basis: 180px; }
+.crmpipelinemain .crmtoolbar > label:not(:first-child) { flex-basis: 130px; }
+.crmworkspace .kanban.crmboardcompact { --crm-stage-width: 244px; gap: 10px; padding: 0 0 12px; }
+.crmworkspace .crmboardcompact > .kanbancol { display: grid; grid-template-rows: 62px minmax(0,1fr) 40px; height: clamp(340px, 58dvh, 680px); padding: 0; border: 1px solid var(--border); border-top: 3px solid #0CADBB; min-height: 0; }
+.crmboardcompact .kanbancol > .crmcolumnhead { min-height: 0; padding: 10px 12px; gap: 0; }
+.crmboardcompact .crmcolumnhead > div { width: 100%; min-width: 0; }
+.crmboardcompact .crmcolumnhead h3 { margin: 0 0 4px; font-size: 13px; line-height: 1.4; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.crmboardcompact .crmcolumnhead .kanbantotal { font-size: 11px; line-height: 1.5; margin: 0; padding: 0; border: 0; white-space: nowrap; }
+.crmboardcompact .kanbantotal span { font-weight: normal; }
+.crmcolumncards { overflow-y: auto; overscroll-behavior-y: contain; min-height: 0; padding: 8px; border-top: 1px solid var(--border); }
+.crmboardcompact .crmcolumncards .crmdeal { position: relative; margin: 0 0 8px; padding: 0; display: block; border: 1px solid var(--border); border-radius: 4px; background: #FFFFFF; }
+.crmboardcompact .crmcolumncards .crmdeal:last-of-type { margin-bottom: 0; border-bottom: 1px solid var(--border); }
+.crmboardcompact .crmdeal .dealcard { padding: 10px 12px 32px; border: 0; border-radius: 4px; display: block; background: #FFFFFF; }
+.crmboardcompact .dealcard > h3 { margin: 0 0 5px; font-size: 12px; line-height: 1.5; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; }
+.crmboardcompact .dealcard > .crmcardcustomer { font-size: 12px; line-height: 1.5; margin: 0 0 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.crmcardnumbers { display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: 4px 8px; font-size: 11px; line-height: 1.6; }
+.crmcardnumbers strong { font-size: 12px; font-weight: normal; font-variant-numeric: tabular-nums; }
+.crmcardnumbers time { font-size: 10px; }
+.crmcardnumbers .crmoverdue { font-weight: bold; }
+.crmboardcompact .dealcard > small { display: block; font-size: 10px; margin-top: 5px; }
+.crmcardmenu { position: absolute; bottom: 4px; right: 8px; font-size: 11px; }
+.crmcardmenu > summary { cursor: pointer; padding: 4px 2px; min-height: 24px; }
+.crmcardmenu > div { display: grid; gap: 8px; padding: 12px; background: #FFFFFF; border: 1px solid #264C5C; width: 210px; }
+.crmcardmenu[open] { position: relative; bottom: auto; right: auto; padding: 0 8px 8px; }
+.crmcardmenu[open] > div { width: 100%; }
+.crmcardmenu button { min-height: 44px; text-align: left; }
+.crmcardmenu label { display: grid; gap: 8px; }
+.crmcardmenu select { max-width: 100%; min-height: 44px; font: inherit; border: 1px solid var(--border); padding: 8px; color: #264C5C; background: #FFFFFF; }
+.crmcolumnadd { display: block; width: 100%; border-top: 1px solid var(--border); padding: 8px 12px; text-align: left; font-size: 12px; color: #264C5C; font-weight: bold; }
+.crmboardcompact .crmdroptarget { outline: 2px solid #264C5C; outline-offset: -2px; }
+.crmmovestatus { display: block; padding: 8px 12px; font-size: 12px; }
+.crmpipelinerail button:focus-visible, .crmcolumncards:focus-visible, .crmcolumnadd:focus-visible, .crmcardmenu :is(summary,button,select):focus-visible, .crmboardcompact .dealcard:focus-visible { outline: 2px solid #264C5C; outline-offset: -2px; }
+@media (max-width: 1000px) {
+  .crmpipelineshell { grid-template-columns: minmax(0,1fr); gap: 12px; }
+  .crmpipelinerail { border-right: 0; border-bottom: 1px solid var(--border); padding: 0 0 8px; }
+  .crmpipelinerail nav { display: flex; overflow-x: auto; }
+  .crmpipelinerail button { min-width: 150px; width: auto; flex-shrink: 0; }
+  .crmpipelinerail h2 { margin-bottom: 8px; }
+  .crmpipelinerail > p { display: none; }
+}
+
+/* CRM handover: priorities and a focused details drawer. Other modules retain their layout. */
+.crmpriorities { margin: 0 0 24px; border: 1px solid var(--border); border-radius: 8px; padding: 16px; background: #fff; color: #264C5C; }
+.crmpriorities > header { margin-bottom: 12px; }
+.crmpriorities h2 { margin: 0; font-size: 17px; }
+.crmpriorities p { margin: 6px 0; font-size: 12px; line-height: 1.5; }
+.crmprioritygrid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 16px; }
+.crmprioritygrid > section { min-width: 0; border-top: 3px solid #0CADBB; padding-top: 12px; }
+.crmprioritygrid h3 { display: flex; justify-content: space-between; font-size: 14px; margin: 0 0 12px; }
+.crmprioritygrid h3 span { border: 1px solid #264C5C; border-radius: 12px; padding: 0 8px; font-variant-numeric: tabular-nums; }
+.crmprioritygrid ul { list-style: none; margin: 0; padding: 0; }
+.crmprioritygrid li { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 12px; overflow-wrap: anywhere; }
+.crmprioritygrid li > div { min-width: 0; }
+.crmprioritygrid small { display: block; font-size: 11px; line-height: 1.6; }
+.crmprioritydone { flex-shrink: 0; min-width: 36px; min-height: 36px; color: #264C5C; background: #fff; border: 1px solid #264C5C; border-radius: 4px; }
+.crmprioritydone:hover { outline: 2px solid #0CADBB; }
+.crmprioritygrid summary { cursor: pointer; font-size: 12px; padding: 8px 0; }
+.crmdrawer { position: fixed; inset: 0 0 0 auto; margin: 0; width: min(920px,100%); max-width: 100%; height: 100dvh; max-height: 100dvh; overflow-y: auto; border: 0; border-left: 1px solid #264C5C; padding: 0 24px 32px; background: #fff; color: #264C5C; font-family: Tahoma; box-sizing: border-box; }
+.crmdrawer::backdrop { background: rgba(38,76,92,.48); }
+.crmdrawerbar { position: sticky; top: 0; z-index: 3; background: #fff; border-bottom: 1px solid #264C5C; display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 16px 0; margin-bottom: 20px; }
+.crmdrawerbar span { font-size: 12px; overflow-wrap: anywhere; }
+.crmdrawer .crmdetail { padding: 0; border: 0; }
+.crmdrawer .crmdetailgrid { grid-template-columns: minmax(0,1fr); }
+.crmquickfacts { display: flex; flex-wrap: wrap; gap: 12px 24px; padding: 12px 0; font-size: 14px; }
+.crmrequirements { border: 1px solid #264C5C; border-left: 4px solid #0CADBB; padding: 16px; margin: 12px 0; background: #fff; }
+.crmrequirements h3 { margin: 0 0 8px; font-size: 15px; }
+.crmrequirements li { margin: 8px 0; line-height: 1.5; }
+.crmlossform { display: grid; gap: 16px; }
+.crmlossform label { display: grid; gap: 8px; }
+.crmlossform textarea { min-height: 120px; }
+.crmcardnext { font-size: 12px; line-height: 1.5; margin: 8px 0; overflow-wrap: anywhere; }
+.crmdetailmetadata > summary { padding: 12px 0; cursor: pointer; font-weight: bold; }
+@media (max-width: 760px) {
+ .crmprioritygrid { grid-template-columns: minmax(0,1fr); gap: 16px; }
+ .crmpriorities { padding: 12px; }
+ .crmdrawer { padding-left: 16px; padding-right: 16px; }
+ .crmdrawer .tablebox { max-width: 100%; overflow-x: auto; }
+}

@@ -90,6 +90,7 @@ export function validateDealStageTransition(deal:R,toStage:string,today=new Date
   }
   if(deal.company==='WMK'&&!clean(deal.designBrief,5000))issue('DESIGN_BRIEF_REQUIRED','designBrief','Enter the client design brief before sending the fee proposal.');
  }
+ if(stage==='Lost'&&!clean(deal.lostReason,2000))issue('LOSS_REASON_REQUIRED','lostReason','Enter a reason for losing this deal.');
  if(stage==='Won'){
   const contract=(deal.contractMetadata&&typeof deal.contractMetadata==='object'?deal.contractMetadata:{}) as {reference?:unknown;signedOn?:unknown;clientName?:unknown};
   if(typeof contract.reference!=='string'||!contract.reference.trim()||contract.reference.length>200)issue('CONTRACT_REFERENCE_REQUIRED','contractMetadata.reference','Enter the signed contract or appointment reference.');

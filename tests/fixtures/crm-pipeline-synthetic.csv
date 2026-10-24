@@ -1,0 +1,6 @@
+recordId,ourBusiness,biginPipeline,biginSubPipeline,stage,amountUGX,date,followUp
+h1,Hagadol,Hagadol Sales,Sales Pipeline,New,120000,2026-10-24,2026-10-25
+h2,Hagadol,Hagadol Sales,Sales Pipeline,Qualified,300000,2026-10-24,2026-10-26
+w1,WMK,Hagadol Sales,Sales Pipeline,New,200000,2026-10-24,
+h3,Hagadol,,,New,50000,2026-10-23,
+w2,WMK,,,New,700000,2026-10-22,

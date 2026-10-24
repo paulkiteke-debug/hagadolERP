@@ -1,0 +1,27 @@
+{
+  "date": "2026-10-24",
+  "kind": "CRM design handover review build",
+  "buildPassed": true,
+  "typecheckPassed": true,
+  "lintNewErrors": 0,
+  "lintExistingErrors": 373,
+  "lintWarnings": 53,
+  "checks": {
+    "crmHandover": 21,
+    "crm": 95,
+    "pipeline": 25,
+    "ui": 78,
+    "layout": 108,
+    "crmWorkflow": 44,
+    "crmImport": 118,
+    "crmActivityImport": 29,
+    "finance": 92,
+    "security": 261,
+    "httpAuthentication": 31
+  },
+  "totalAssertions": 902,
+  "browserAcceptance": "pending",
+  "googleSignInRoundTrip": "not tested",
+  "liveProductionTouched": false,
+  "newDatabaseMigrations": false
+}
