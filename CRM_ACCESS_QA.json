@@ -1,0 +1,59 @@
+{
+  "date": "2026-10-25",
+  "release": "1.3.1 CRM access update",
+  "checks": {
+    "security_regression": 261,
+    "crm_role_api": 70,
+    "crm_drizzle_workflow": 46,
+    "migration_runner": 10,
+    "permission_ui_server_render": 9,
+    "core_release": 262,
+    "finance_regression": 92,
+    "ui_regression": 78,
+    "crm_handover": 21,
+    "crm_import": 118,
+    "crm_regression": 95,
+    "browser_regression": 38,
+    "production_http_authentication": 31
+  },
+  "assertionsPassed": 1131,
+  "failed": 0,
+  "build": "passed",
+  "typescript": "passed",
+  "lint": {
+    "newErrors": 0,
+    "inheritedErrors": 343,
+    "warnings": 54
+  },
+  "migration": "0011_crm_access_profiles.sql",
+  "migrationGeneratedWith": "drizzle-kit 0.31.10",
+  "schemaConsistency": "Subsequent generate reports no schema changes",
+  "migrationExistingUserIdsPreserved": true,
+  "migrationWrongDatabaseGuardTested": true,
+  "browser": {
+    "engine": "Chromium 153",
+    "widths": [
+      1440,
+      1024,
+      390
+    ],
+    "realClientComponents": true,
+    "syntheticData": true
+  },
+  "authorization": {
+    "sessionIdentityAuthoritative": true,
+    "stableMembershipOwnership": true,
+    "companySQLPredicates": true,
+    "ownershipSQLPredicates": true,
+    "storedCompanyAndVersionOnWrites": true,
+    "noNativeDatabaseRLSClaimed": true,
+    "quoteApprovalAudited": true,
+    "quoteEditClearsApproval": true,
+    "managerCannotBypassMandatoryStageEvidence": true
+  },
+  "liveProductionTouched": false,
+  "liveGoogleRoleLoginsTested": false,
+  "liveStaffProvisioned": false,
+  "deployment": "Not performed. Apply migration to CRM test DB and review Preview with real approved accounts.",
+  "historicalOwnership": "Existing display names are preserved; a manager must assign stable ERP user IDs before rep access."
+}

@@ -64,5 +64,7 @@
     "Live Google authentication, real customer reconciliation and Vercel Preview acceptance remain to be checked.",
     "Bigin file review is read only, not an import or repair approval workflow.",
     "Existing lint debt remains visible."
-  ]
+  ],
+  "supersededBy": "CRM_ACCESS_QA.json",
+  "scope": "Historical UI-only update. Current access update QA is in CRM_ACCESS_QA.json."
 }

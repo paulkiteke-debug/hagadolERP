@@ -1,3 +1,5 @@
+> Current package: also includes the CRM access update. Follow CRM_ACCESS_UPDATE.md for migration and installation. The UI-only installation notes below describe the earlier design update.
+
 # Hagadol ERP · CRM design rebuild
 
 Date: 25 October 2026

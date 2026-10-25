@@ -4,6 +4,7 @@ import * as schema from '../db/schema';
 import type {Access} from './access-policy';
 import {canReadRecord,canWriteRecord} from './access-policy';
 import type {RecordRow} from './erp-primitives';
+import {crmRecordScope} from './crm-record-scope';
 import {canonicalCRMStage,type CRMStageVisit} from './crm';
 
 export type CRMDatabase=LibSQLDatabase<typeof schema>;
@@ -28,7 +29,7 @@ function boundedText(value:unknown,field:string,max:number,required=false){
 }
 async function readRecord(db:Pick<CRMDatabase,'select'>,access:Access,id:string|undefined,type?:string,write=false){
  if(!id||typeof id!=='string'||id.length>120)fail('INVALID_LINK','Choose a valid customer, contact or opportunity.');
- const [row]=await db.select().from(schema.records).where(and(eq(schema.records.id,id),inArray(schema.records.company,access.companies))).limit(1);
+ const [row]=await db.select().from(schema.records).where(and(eq(schema.records.id,id),crmRecordScope(access))).limit(1);
  if(!row)fail('CRM_RECORD_NOT_FOUND','The CRM record is unavailable.',404);
  const record=hydrate(row);
  if(type&&record.type!==type||!canReadRecord(access,record)||write&&!canWriteRecord(access,record,'edit'))fail('CRM_ACCESS_DENIED','You cannot access this CRM record.',403);
@@ -77,7 +78,7 @@ export async function getCustomerHistory(db:CRMDatabase,access:Access,target:Cus
  const limit=options.limit??50;if(!Number.isInteger(limit)||limit<1||limit>100)fail('INVALID_LIMIT','Choose a history limit between 1 and 100.');
  const before=options.before?{timestamp:timestamp(options.before.timestamp,'before.timestamp'),id:boundedText(options.before.id,'before.id',200,true)}:undefined;
  // Resolve the customer's relationship graph without exposing another workspace.
- const related=await db.select().from(schema.records).where(and(eq(schema.records.company,anchor.company),inArray(schema.records.type,['contact','deal','task'])));
+ const related=await db.select().from(schema.records).where(and(eq(schema.records.company,anchor.company),crmRecordScope(access),inArray(schema.records.type,['contact','deal','task'])));
  const visible=related.map(hydrate).filter(row=>canReadRecord(access,row));
  const contacts=visible.filter(row=>row.type==='contact'),deals=visible.filter(row=>row.type==='deal');
  const targetDeals=deals.filter(deal=>anchor.type==='deal'?deal.id===anchor.id:anchor.type==='contact'?deal.contactId===anchor.id:deal.crmCompanyId===anchor.id||contacts.some(contact=>contact.id===deal.contactId&&contact.crmCompanyId===anchor.id));
@@ -115,10 +116,10 @@ export async function getPipelineVelocity(db:CRMDatabase,access:Access,company:s
  if(!access.companies.includes(company))fail('CRM_ACCESS_DENIED','You cannot access this business.',403);
  const asOf=timestamp(options.asOf??new Date().toISOString(),'asOf'),threshold=options.stagnantDays??14;
  if(!Number.isInteger(threshold)||threshold<1||threshold>365)fail('INVALID_THRESHOLD','Choose a stagnation threshold from 1 to 365 days.');
- const rows=await db.select().from(schema.records).where(and(eq(schema.records.company,company),eq(schema.records.type,'deal')));
+ const rows=await db.select().from(schema.records).where(and(eq(schema.records.company,company),crmRecordScope(access),eq(schema.records.type,'deal')));
  const deals=rows.map(hydrate).filter(deal=>canReadRecord(access,deal));
- const lastInteractions=await db.select({dealId:schema.crmActivities.dealId,latest:sql<string>`max(${schema.crmActivities.occurredAt})`}).from(schema.crmActivities).where(and(eq(schema.crmActivities.company,company),lte(schema.crmActivities.occurredAt,asOf),sql`${schema.crmActivities.kind} <> 'Task Reminder'`)).groupBy(schema.crmActivities.dealId);
- const legacy=await db.select().from(schema.records).where(and(eq(schema.records.company,company),eq(schema.records.type,'task')));
+ const lastInteractions=await db.select({dealId:schema.crmActivities.dealId,latest:sql<string>`max(${schema.crmActivities.occurredAt})`}).from(schema.crmActivities).where(and(eq(schema.crmActivities.company,company),inArray(schema.crmActivities.dealId,deals.map(deal=>deal.id)),lte(schema.crmActivities.occurredAt,asOf),sql`${schema.crmActivities.kind} <> 'Task Reminder'`)).groupBy(schema.crmActivities.dealId);
+ const legacy=await db.select().from(schema.records).where(and(eq(schema.records.company,company),crmRecordScope(access),eq(schema.records.type,'task')));
  const lastByDeal=new Map(lastInteractions.map(row=>[row.dealId,row.latest]));
  for(const task of legacy.map(hydrate).filter(row=>row.status==='Done'&&row.eos!==true&&!row.meetingId&&!row.issueId&&!row.rockId&&row.dealId)){
   const date=legacyHistory(task).timestamp;

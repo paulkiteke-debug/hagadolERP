@@ -2,7 +2,7 @@ export const runtime='nodejs';
 import type {SQLDatabase,SQLStatement,ObjectStore} from '@/lib/storage-types';
 import {env} from '@/lib/runtime';
 import {authenticate,AccessError,jsonBody,securityReply,securityFailure,verifyWrite,rateLimit,fingerprint} from '@/lib/security';
-import {canWriteRecord,canReadRecord} from '@/lib/access-policy';
+import {canWriteRecord,canReadRecord,canImportCRM} from '@/lib/access-policy';
 import {buildPlan} from '@/lib/erp-engine';
 import {biginRow,crmImportSpec,mapBiginContact,mapBiginCompany,mapBiginSale,mapBiginTask,mapBiginStageHistory,biginDate,crmRowManifest} from '@/lib/crm-import';
 import {bytesHash} from '@/lib/finance-import-revisions';
@@ -11,7 +11,7 @@ const cfg=()=>env as unknown as {DB:SQLDatabase;BUCKET:ObjectStore;ERP_OWNER_EMA
 async function writer(req:Request,company:string,hash:string){
  const c=cfg(),key=req.headers.get('x-crm-import-key');
  if(key){if(!c.CRM_IMPORT_KEY||key.length>200||await fingerprint(key)!==await fingerprint(c.CRM_IMPORT_KEY)||!c.CRM_IMPORT_SOURCE_HASH?.split(',').includes(hash)||c.CRM_IMPORT_COMPANY!==company||!c.CRM_IMPORT_EXPIRES_AT||Date.parse(c.CRM_IMPORT_EXPIRES_AT)<=Date.now()||!Number.isFinite(Date.parse(c.CRM_IMPORT_EXPIRES_AT)))throw new AccessError('CRM import access could not be verified.');verifyWrite(req);await rateLimit(c.DB,'bigin-import-'+hash);return 'Authorised Bigin CRM import';}
- const {access}=await authenticate(c,req);if(!canWriteRecord(access,{company,type:'contact',status:'Active'} as any,'create'))throw new AccessError('Your role cannot import these contacts.');return access.email;
+ const {access}=await authenticate(c,req);if(!canImportCRM(access)||!canWriteRecord(access,{company,type:'contact',status:'Active'} as import('@/lib/erp-primitives').RecordRow,'create'))throw new AccessError('Your role cannot import these contacts.');return access.email;
 }
 export async function POST(req:Request){try{
  const input:any=await jsonBody(req),spec=crmImportSpec(input),actor=await writer(req,spec.company,spec.sourceHash),c=cfg(),d=c.DB;

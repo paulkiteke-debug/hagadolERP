@@ -22,7 +22,7 @@ async function seed(row:RecordRow){await db.insert(schema.records).values({...ro
 try{
  for(const filename of (await readdir('drizzle')).filter(name=>name.endsWith('.sql')).sort())await client.batch((await readFile('drizzle/'+filename,'utf8')).split('--> statement-breakpoint').map(sql=>sql.trim()).filter(Boolean),'write');
  const customer=base('customer','crm_company',{billingAddress:'Kampala',taxReference:'TIN-123'}),contact=base('contact','contact',{crmCompanyId:'customer'});
- const deal=base('deal','deal',{crm:true,status:'New',amount:1000,crmCompanyId:'customer',contactId:'contact',owner:'Sales',customer:'Buyer'});
+ const deal=base('deal','deal',{crm:true,status:'New',amount:1000,crmCompanyId:'customer',contactId:'contact',owner:'Sales',crmOwnerId:sales.id,customer:'Buyer'});
  await seed(customer);await seed(contact);await seed(deal);await seed(base('foreign','contact',{company:'WMK'}));
  const empty=validateDealStageTransition(deal,'Quotation','2026-01-20',[customer,contact,deal]);
  check(!empty.ok&&empty.errors.some(issue=>issue.code==='CUSTOMER_BILLING_UNVERIFIED')&&empty.errors.some(issue=>issue.field==='technicalSiteSurvey'),'Missing metadata has structured field codes');
@@ -46,8 +46,8 @@ try{
  let state:State={records:[reviewed,contact,deal],journal:[],audit:[]};
  assert.throws(()=>buildPlan({action:'stage',id:'deal',status:'Quotation'},state),CRMValidationError);passed++;
  assert.throws(()=>buildPlan({action:'stage',id:'deal',status:'Unknown'},state),CRMValidationError);passed++;
- assert.throws(()=>buildPlan({action:'create',company:'Hagadol',type:'deal',name:'Bypass attempt',crm:true,crmStage:'Quotation',owner:'Sales',customer:'Buyer',preserveHistoricalCRMStages:true},state),CRMValidationError);passed++;
- const historical=buildPlan({action:'create',company:'Hagadol',type:'deal',name:'Historical deal',crm:true,crmStage:'Quotation',owner:'Sales',customer:'Buyer'},state,{preserveHistoricalCRMStages:true});
+ assert.throws(()=>buildPlan({action:'create',company:'Hagadol',type:'deal',name:'Bypass attempt',crm:true,crmStage:'Quotation',owner:'Sales',crmOwnerId:sales.id,customer:'Buyer',preserveHistoricalCRMStages:true},state),CRMValidationError);passed++;
+ const historical=buildPlan({action:'create',company:'Hagadol',type:'deal',name:'Historical deal',crm:true,crmStage:'Quotation',owner:'Sales',crmOwnerId:sales.id,customer:'Buyer'},state,{preserveHistoricalCRMStages:true});
  check(historical.writes[0].crmStageReviewRequired&&historical.writes[0].crmStageHistory.length===0,'Historical imports preserve source stage without fabricated visits');
  assert.throws(()=>buildPlan({action:'edit',id:'deal',fields:{crmStage:'Won'}},state),CRMValidationError);passed++;
  const taskPlan=buildPlan({action:'create',company:'Hagadol',type:'task',name:'Call',owner:'Sales',due:today,crm:true,contactId:'contact',actor:sales.email},state);
@@ -72,12 +72,17 @@ try{
  await logCRMActivity(db,sales,{companyId:'customer',kind:'Note',description:'Company note',occurredAt:'2026-01-12T09:00:00Z'});
  await logCRMActivity(db,sales,{dealId:'deal',kind:'Meeting',description:'Review',occurredAt:'2026-01-13T09:00:00Z'});
  await logCRMActivity(db,sales,{dealId:'deal',kind:'Task Reminder',description:'Call next week',dueAt:'2026-01-30T09:00:00Z',occurredAt:'2026-01-14T09:00:00Z'});
- await seed(base('task','task',{crm:true,dealId:'deal',activityKind:'Call',name:'Historical call',notes:'Legacy outcome',status:'Done',completedDate:'2026-01-15'}));
- await seed(base('meeting','task',{crm:true,contactId:'contact',activityKind:'Meeting',status:'Open',due:'2026-01-30'}));
+ await seed(base('task','task',{crm:true,crmOwnerId:sales.id,dealId:'deal',activityKind:'Call',name:'Historical call',notes:'Legacy outcome',status:'Done',completedDate:'2026-01-15'}));
+ await seed(base('meeting','task',{crm:true,crmOwnerId:sales.id,contactId:'contact',activityKind:'Meeting',status:'Open',due:'2026-01-30'}));
  await seed(base('eos','task',{eos:true,crm:true,dealId:'deal',notes:'PRIVATE_EOS'}));
  const history=await getCustomerHistory(db,sales,{companyId:'customer'});
  check(history.items.length===7&&!JSON.stringify(history).includes('PRIVATE_EOS'),'History unifies all interaction types and excludes EOS');
  check(history.items.every((item,index)=>!index||history.items[index-1].timestamp>=item.timestamp),'History is reverse chronological');
+ await seed(base('other-rep-deal','deal',{crm:true,crmOwnerId:'another-rep',status:'New',crmCompanyId:'customer',contactId:'contact',owner:'Another rep',customer:'Buyer'}));
+ await logCRMActivity(db,owner,{dealId:'other-rep-deal',kind:'Note',description:'PRIVATE_OTHER_REP',occurredAt:'2026-01-16T09:00:00Z'});
+ await rejects(getCustomerHistory(db,sales,{dealId:'other-rep-deal'}),'CRM_RECORD_NOT_FOUND');
+ check(!JSON.stringify(await getCustomerHistory(db,sales,{companyId:'customer'})).includes('PRIVATE_OTHER_REP'),'Customer timeline excludes another reps deal interactions');
+
  check(history.items.find(item=>item.id==='legacy:task')?.author===null,'Missing historical author is not invented');
  const contactHistory=await getCustomerHistory(db,sales,{contactId:'contact'});
  check(contactHistory.items.some(item=>item.id===first.id),'Contact history includes linked deal interactions');

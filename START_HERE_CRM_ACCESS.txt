@@ -1,0 +1,24 @@
+HAGADOL ERP — CRM ACCESS UPDATE
+25 October 2026
+
+The current CRM design is retained. This update adds stronger company and user
+permissions, stable CRM ownership, and authenticated quote approval.
+
+IMPORTANT: This package includes a new database migration, 0011.
+Apply it to the separate CRM TEST database before deploying this code to Preview.
+Do not treat this package as the previous UI-only update.
+
+Follow docs/CRM_ACCESS_UPDATE.md. The guarded Preview command is:
+
+node --env-file=.env.crm-preview.local scripts/migrate-crm-preview.mjs
+
+Keep your private .env files and .git folder. The command expects the existing
+hagadolerpcrmtest database and rejects other database URLs.
+
+Under Settings > User access, select Sales and choose the CRM profile:
+Sales manager, Sales rep, or Field operations.
+
+A manager must assign an ERP user to existing deals and tasks before reps can
+access them. Imported owner names are preserved but are not access credentials.
+
+No live database changes or production deployment were performed.

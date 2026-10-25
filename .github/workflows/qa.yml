@@ -40,6 +40,8 @@ jobs:
       - run: npm run test:finance-import
       - run: npm run test:crm-import
       - run: npm run test:security
+      - run: npm run test:crm-rbac
+      - run: npm run test:crm-permissions-ui
       - run: npm run test:runtime
       - run: npm run test:ui
       - run: npm run test:layout

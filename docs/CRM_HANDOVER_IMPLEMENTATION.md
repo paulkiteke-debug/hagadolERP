@@ -11,3 +11,5 @@ The new Bigin review screen calculates counts and duplicate candidates from an u
 The supplied prototype's invented records, fixed import counts, simulated AI, automatic invoices and new company tables are not used in the deployed application. The offline review file contains clearly labelled synthetic examples only.
 
 Browser checks now cover the real client components using a local synthetic fixture. Live Google sign in, production customer data reconciliation and acceptance on your Vercel Preview remain separate checks.
+
+The subsequent company access and CRM profile update is described in CRM_ACCESS_UPDATE.md. That update requires versioned migration 0011 before Preview deployment.

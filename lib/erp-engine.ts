@@ -16,6 +16,7 @@ function write(r:RecordRow,existing=false){if(existing&&!expected.some(x=>x.id==
 function get(){const r=state.records.find(r=>r.id===input.id);if(!r)throw Error('Record not found.');if(input.expectedVersion!==undefined&&(!Number.isInteger(input.expectedVersion)||input.expectedVersion!==r.version))throw new RecordConflictError();company=r.company;return {...r}}
 function add(source:string,account:string,debit:number,credit:number,d:string,desc:string){const existing=entries.find(x=>x.source===source&&x.account===account);if(existing){existing.debit+=debit;existing.credit+=credit}else entries.push({id:uid(),company,source,account,debit,credit,date:d,description:desc});}
 function create(data:Record<string,RecordRow[string]>,newId=uid()):RecordRow{if(!companies.includes(company))throw Error('Choose WMK or Hagadol.');if(!recordTypes.includes(data.type))throw Error('Unsupported record.');const name=text(data.name,500);if(!name)throw Error('Enter a name or description.');const r:RecordRow={...data,id:newId,company,type:data.type,name,status:financial.includes(data.type)||['post','email','loan','bid','proposal','document','knowledge'].includes(data.type)?'Draft':data.type==='deal'?'New':['task','rock','eos_issue'].includes(data.type)?'Open':data.type==='eos_meeting'?'Planned':data.type==='project'?'Planning':data.type==='campaign'?'Planned':'Active',amount:0,paid:0,credited:0,version:0,date:date(data.date),due:date(data.due,true),created:now};delete r.action;delete r.requestId;delete r.edit;for(const k of ['actor','verifiedBy','verifiedAt','sourceDocumentVersion','gateHistory','gateStartedAt','completedDate','l10Clock'])delete r[k];
+if(r.type==='quote')delete r.quoteApproval;
 for(const protectedField of ['recognitionGateId','recognitionStage','recognitionScheduleApprovedBy'])delete r[protectedField];
 if(r.type==='project'){const prior=state.records.find(row=>row.id===newId&&row.company===company&&row.type==='project');if(prior?.revenueSchedule)r.revenueSchedule=prior.revenueSchedule;else delete r.revenueSchedule;}
 if(r.type==='invoice'){
@@ -77,7 +78,9 @@ function recognise(project:RecordRow,gate:RecordRow,automatic=false){
  if(state.records.some(row=>row.id===gate.id)&&!expected.some(ref=>ref.id===gate.id))expected.push({id:gate.id,version:gate.version});
  return recognition;
 }
-if(action==='start_l10'){
+if(action==='approve_quote'){
+ const r=get();if(r.type!=='quote'||r.status!=='Draft')throw Error('Only a draft quote can be approved.');if(!input.approvalActor)throw Error('An authenticated quote reviewer is required.');r.quoteApproval={approvedBy:input.approvalActor,approvedAt:now,approvedVersion:r.version+1};write(r,true);focusId=r.id;label='Approved quotation';
+}else if(action==='start_l10'){
 const r=create({type:'eos_meeting',name:input.name||company+' L10 meeting',owner:input.owner,attendees:input.attendees,date:day()},id);r.status='In progress';r.agendaStep='Segue';r.l10Clock=startMeetingClock(now);write(r);focusId=r.id;label='Started L10 meeting';
 }else if(action==='end_l10'){
 const r=get();if(r.type!=='eos_meeting'||r.status!=='In progress')throw Error('Only an active L10 meeting can end.');
@@ -105,7 +108,7 @@ const r=get();if(r.type==='deal'){input.status=canonicalCRMStage(r.company,Strin
   if(followUp<day())throw Error('Choose a follow up date from today onwards.');
   const priorTask=state.records.find(task=>task.type==='task'&&task.crm===true&&task.company===r.company&&task.dealId===r.id&&task.lossFollowUp===true&&task.status!=='Done');
   if(priorTask){if(priorTask.due!==followUp)throw Error('An open loss follow up already exists. Edit that activity to change its date.');}
-  else {const task=create({type:'task',crm:true,name:'Follow up: '+r.name,owner:r.owner,dealId:r.id,due:followUp,activityKind:'Task',notes:r.lostReason,lossFollowUp:true},id+'_loss_followup');write(task);}
+  else {const task=create({type:'task',crm:true,name:'Follow up: '+r.name,owner:r.owner,dealId:r.id,due:followUp,activityKind:'Task',notes:r.lostReason,lossFollowUp:true,crmOwnerId:r.crmOwnerId},id+'_loss_followup');write(task);}
  }
 }if(r.type==='deal'&&r.crm)r.crmStage=r.status;if(r.type==='task'&&r.crm)r.crmStatus=r.status;if(r.type==='task'&&(r.eos===true||r.crm===true)){if(r.status==='Done'&&previousStatus!=='Done')r.completedDate=day();else if(r.status!=='Done')delete r.completedDate;}if(r.type==='eos_meeting'&&r.status==='In progress'&&previousStatus==='Planned'){r.agendaStep='Segue';r.l10Clock=startMeetingClock(now);}if(r.type==='rock')validateRock(r);if(['task','eos_issue','eos_meeting'].includes(r.type))validateEOS(r,state.records);if(r.type==='eos_meeting'){if(r.status==='Completed'&&previousStatus==='Planned')throw Error('Start the L10 meeting before completing it.');if(r.status==='Completed'&&previousStatus!=='Completed'){const timed={...r,status:previousStatus};Object.assign(r,controlMeetingClock(timed,'Finish',undefined,now));r.reviewSnapshot={...meetingReview(resolveLinkedState(state,day()).records,r),timer:r.l10Clock,recordedAt:now};}if(r.status!=='Completed')delete r.reviewSnapshot;}write(r,true);focusId=r.id;label='Status changed to '+r.status;
 }else if(action==='meeting_control'){

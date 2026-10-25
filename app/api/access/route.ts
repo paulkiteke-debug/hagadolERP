@@ -7,7 +7,7 @@ const config=()=>env as unknown as {DB:SQLDatabase;ERP_OWNER_EMAIL?:string};
 export async function GET(req:Request){try{
  const {access}=await authenticate(config(),req);if(access.role!=='Owner')throw new AccessError('Only the workspace owner can manage user access.');
  const d=config().DB;
- const users=(await d.prepare('SELECT id,email,role,companies,enabled,created,updated, CASE WHEN user_id IS NULL THEN 0 ELSE 1 END AS claimed FROM access_users ORDER BY created').all()).results.map((r:any)=>({...r,companies:JSON.parse(r.companies)}));
+ const users=(await d.prepare('SELECT id,email,role,crm_profile,companies,enabled,created,updated, CASE WHEN user_id IS NULL THEN 0 ELSE 1 END AS claimed FROM access_users ORDER BY created').all<{id:string;email:string;role:string;crm_profile:string|null;companies:string;enabled:number;created:string;updated:string;claimed:number}>()).results.map((r)=>({...r,companies:JSON.parse(r.companies)}));
  const events=(await d.prepare('SELECT actor,action,target,date FROM security_events ORDER BY date DESC LIMIT 100').all()).results;
  return securityReply({users,events});
 }catch(e){return securityFailure(e)}}
@@ -20,7 +20,7 @@ export async function POST(req:Request){try{
  if(existing&&existing.email!==values.email)throw new AccessError('Create a new user for a different email address.',400);
  const duplicate:any=await d.prepare('SELECT id FROM access_users WHERE email=?').bind(values.email).first();if(duplicate&&duplicate.id!==existing?.id)throw new AccessError('This email already has a user record.',409);
  const id=existing?.id||crypto.randomUUID(),action=existing?'Updated access':'Provisioned access';
- const statement=existing?d.prepare('UPDATE access_users SET role=?,companies=?,enabled=?,updated=? WHERE id=? AND role<>?').bind(values.role,JSON.stringify(values.companies),values.enabled,now,id,'Owner'):d.prepare('INSERT INTO access_users (id,user_id,email,role,companies,enabled,created,updated) VALUES (?,NULL,?,?,?,?,?,?)').bind(id,values.email,values.role,JSON.stringify(values.companies),values.enabled,now,now);
+ const statement=existing?d.prepare('UPDATE access_users SET role=?,crm_profile=?,companies=?,enabled=?,updated=? WHERE id=? AND role<>?').bind(values.role,values.crmProfile,JSON.stringify(values.companies),values.enabled,now,id,'Owner'):d.prepare('INSERT INTO access_users (id,user_id,email,role,crm_profile,companies,enabled,created,updated) VALUES (?,NULL,?,?,?,?,?,?,?)').bind(id,values.email,values.role,values.crmProfile,JSON.stringify(values.companies),values.enabled,now,now);
  await d.batch([statement,d.prepare('INSERT INTO security_events (id,actor,action,target,date) VALUES (?,?,?,?,?)').bind(crypto.randomUUID(),access.email,action+' · '+values.role+' · '+(values.enabled?'Active':'Disabled')+' · '+values.companies.join(', '),values.email,now)]);
  return securityReply({id,message:existing?'User access updated.':'User provisioned. Sign in with this Google email to access the permitted companies.'});
 }catch(e){return securityFailure(e)}}

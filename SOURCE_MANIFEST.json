@@ -1,6 +1,7 @@
 {
-  "release": "1.3.1 CRM design rebuild",
+  "release": "1.3.1 CRM access update",
   "date": "2026-10-25",
+  "migrationRequired": "0011_crm_access_profiles.sql",
   "files": [
     {
       "path": ".env.example",
@@ -8,7 +9,7 @@
     },
     {
       "path": ".github/workflows/qa.yml",
-      "sha256": "b978272195da0d8a5d39c5ecbbb9f5414982610ec1124ab2a2240fc024118a46"
+      "sha256": "4588ce5ed86c7f505dc25804025f20191ea725864939639ad3e900261d8e56de"
     },
     {
       "path": ".gitignore",
@@ -19,8 +20,12 @@
       "sha256": "a3909ac0447c469fda12c57374993be70f47ce73e49fd3124678c7c047f2214d"
     },
     {
+      "path": "CRM_ACCESS_QA.json",
+      "sha256": "03a8b4aa0086f68f28e5d400e8bcc7e051a68550fc347ab0d6b192940d3a3373"
+    },
+    {
       "path": "CRM_REVIEW_QA.json",
-      "sha256": "4125ab32bdd8c19c3bee2e58a902f6c97845af7e404b8b2901e48af243b29bca"
+      "sha256": "f4327cab38fb8f4d409c6b138a5216c2fd804e3f1f9de27acdfe2b34cecbbea0"
     },
     {
       "path": "GEMINI_CRM_QA_REQUEST.txt",
@@ -75,8 +80,12 @@
       "sha256": "3f994bfc6d67427404efc91d53304fd88d791ddf742ff670913dcfcbd72e8bad"
     },
     {
+      "path": "START_HERE_CRM_ACCESS.txt",
+      "sha256": "27e0ae69a91652b37ee46ee9b57d1b615b29ba9916415919d4815405313f6350"
+    },
+    {
       "path": "START_HERE_CRM_DESIGN.txt",
-      "sha256": "1a39911aedb810ac4efb13789ca97384b89a8048b0bb8e0ed395fa2ea4cbcc1e"
+      "sha256": "31fccbcb37b1a88e429022c03f65a4701b57fda8fb29c2e3c3f312ffdcecb981"
     },
     {
       "path": "app/access-denied/page.tsx",
@@ -84,7 +93,7 @@
     },
     {
       "path": "app/api/access/route.ts",
-      "sha256": "9edc0c69038be0d476813d42ecd560fbd41293bd463fba9235ee1697597449c2"
+      "sha256": "37d458a7b953d627af94f2d3af3569b7f248e935d25f8d8320e33f494740eb8a"
     },
     {
       "path": "app/api/auth/[...nextauth]/route.ts",
@@ -92,7 +101,7 @@
     },
     {
       "path": "app/api/crm-imports/route.ts",
-      "sha256": "3a0b17cec68dbdb180664753ff9fc544d5906ea76821e1ee4d3f3f6c6bebab49"
+      "sha256": "d0d3528932e283c1cc2a408e493d906a4f97a0c6afa5e2eb64be868e97dc6bbf"
     },
     {
       "path": "app/api/crm/route.ts",
@@ -100,7 +109,7 @@
     },
     {
       "path": "app/api/erp/route.ts",
-      "sha256": "82bf184c6d4c7d801a39671160e58c1a6121b6a7cf6d352636f2c287f0c8c6c8"
+      "sha256": "fd9cf099e10d32c040654642b1c1291ae4bf3571c160472d1a409ec54fcc7e53"
     },
     {
       "path": "app/api/finance-imports/files/route.ts",
@@ -144,7 +153,7 @@
     },
     {
       "path": "app/crm-pipeline-board.tsx",
-      "sha256": "8ab3bde45c637c68d32941bacd94a3b57a9fe173c8d289e03110649ec21387c1"
+      "sha256": "35e71e78a2ff88f6cd6a6e82e5253c8b0a1cb640929d5fdbb4fbb9d7e4b1a694"
     },
     {
       "path": "app/crm-priorities.tsx",
@@ -152,7 +161,7 @@
     },
     {
       "path": "app/crm-record-form.tsx",
-      "sha256": "98b54695e01b646acf26831ea33e0b4134bf92cc24ce7e6b75ca3dde44ee0331"
+      "sha256": "58a6cf745811111b2942b6592800ea709d34a1204a0fd23041fc5c2ea8b0f861"
     },
     {
       "path": "app/crm/activities/page.tsx",
@@ -176,7 +185,7 @@
     },
     {
       "path": "app/erp-access.tsx",
-      "sha256": "63bdbb497a7594e00ec7484085819e13e4cfcac6098056fbb4fcc3a72b0b2dba"
+      "sha256": "0622232f01e25ce4b4c6ecce3a5d87856a0ff5c51e52cc5422504cfb31e80017"
     },
     {
       "path": "app/erp-ai.tsx",
@@ -192,7 +201,7 @@
     },
     {
       "path": "app/erp-crm.tsx",
-      "sha256": "f79cab19caaba3453f3e73badf47b2ccd18e55a5e7aad154d3ea74cc60db72b0"
+      "sha256": "68b0afc79985684bae1df6ad2da50e2a195541ba9e72ed3afe6971061bbb73c3"
     },
     {
       "path": "app/erp-deferred.tsx",
@@ -268,7 +277,7 @@
     },
     {
       "path": "app/erp.tsx",
-      "sha256": "b04394a790f8006c0cfd1e6918d0a044d96bdce5d0b1d5e2de12f6a5a4a25a11"
+      "sha256": "c30488b204120c1aad9d90e7a3daabcfcfecec127041097908e90639f43107f0"
     },
     {
       "path": "app/finance/imports/page.tsx",
@@ -572,15 +581,19 @@
     },
     {
       "path": "db/schema.ts",
-      "sha256": "c986f686a8dc805f228a6fbc506051f73788277060ae6cd3e89ffc248fe60cbf"
+      "sha256": "a8e098ff3669931f0692a547168a2177e628749119eb3047e2dc4e69a5b289ba"
     },
     {
       "path": "docs/CI_DEPLOYMENT_CHECKS.md",
       "sha256": "b61de8211b7faca33e00b3375d43f0f8ea735abe986177907ea54891a113dd8c"
     },
     {
+      "path": "docs/CRM_ACCESS_UPDATE.md",
+      "sha256": "eb8795d90c3391fbeeb068e81ee81223a0ccd6ed9a049f03422f9e6115edd411"
+    },
+    {
       "path": "docs/CRM_DESIGN_REBUILD.md",
-      "sha256": "e77c018e060a7a0076a3a285d4ba5a85c19bf5156aada7939b0817ee53bf4591"
+      "sha256": "1847ec3ab4803ae6d24e26bf6df68c4ccefde3a12cc87ad2dd5364c2f7b81258"
     },
     {
       "path": "docs/CRM_FINANCE_QA.md",
@@ -592,7 +605,7 @@
     },
     {
       "path": "docs/CRM_HANDOVER_IMPLEMENTATION.md",
-      "sha256": "01bbbcde38aa32fface6b6ac023c4b8f73506483f50193219d9fe6205b8463dd"
+      "sha256": "f14b0fff9243f99c757f43bda06fa954fa75ff2d08d195070f0f419ae5fa6a14"
     },
     {
       "path": "docs/CRM_PIPELINE_REVIEW.md",
@@ -687,6 +700,10 @@
       "sha256": "69cdd46d465bda9b349fc12a71504e4f9fc613be0dde1c51ddaada6055ff406b"
     },
     {
+      "path": "drizzle/0011_crm_access_profiles.sql",
+      "sha256": "f450d4423c24394966b5b311a6db72ded06eaadaf43c880b1021875098f689b7"
+    },
+    {
       "path": "drizzle/meta/0000_snapshot.json",
       "sha256": "bc0b98a365532b051ff6f8d829d3452becbebc6d438203196e92d5b7068cf82d"
     },
@@ -731,8 +748,12 @@
       "sha256": "61b232db820cc48178049d14f7d1667ec1eb22fdd5d4bf67ab0cb1c93a5f75b6"
     },
     {
+      "path": "drizzle/meta/0011_snapshot.json",
+      "sha256": "fd8f123e54bf2276977518472d9600dd1bf275373adbacfb9492cf983cd610b8"
+    },
+    {
       "path": "drizzle/meta/_journal.json",
-      "sha256": "ee356f7b6dda3ddc4499810c67dd503515b3cff29b4be38f0392a53fb07bef19"
+      "sha256": "3d82b4687ef903405ced281c0787ab9c08b894bf955e6b3c3dfb8b42d4264a1c"
     },
     {
       "path": "eslint.config.mjs",
@@ -744,7 +765,7 @@
     },
     {
       "path": "lib/access-policy.ts",
-      "sha256": "7c1882b420b7e8c10c748f5d483bb66f1f9c96c2e02fc9a39af1567c810a57c9"
+      "sha256": "635cacc7dfe88af30d77086498619050c26e1434d9349dd30f3981afd8f032bb"
     },
     {
       "path": "lib/company-profiles.ts",
@@ -767,8 +788,12 @@
       "sha256": "1c93d747e384c8e17e3e3dd5361b24412babf5eba2a11d2ae7a75f4e0924112c"
     },
     {
+      "path": "lib/crm-authorization.ts",
+      "sha256": "b7c0940e64316f5f9021ca2e6708d08072903214e32baefcc27d266184cc9468"
+    },
+    {
       "path": "lib/crm-data.ts",
-      "sha256": "10ce63abf6f3057a33eb16fbf110bcc978a062f7ead484f0da1db56051096e3c"
+      "sha256": "58315e40c31f207f064c556a169a849f9bdb1c024b6b1f72db90937d9667d1da"
     },
     {
       "path": "lib/crm-import-preview.ts",
@@ -787,12 +812,16 @@
       "sha256": "c1ed24247b72a26eacf00c2c0e4addb3936ca1f8ed34008c376c8e6017e4cf0e"
     },
     {
+      "path": "lib/crm-record-scope.ts",
+      "sha256": "7c2c13a1f086001db63dfc1c4155dc969bb3435572f9be59961e989686d95672"
+    },
+    {
       "path": "lib/crm.ts",
       "sha256": "5124841b9fea53be080461999e2f6fca1122b3d5b11d1a3fca4af6810a3bf6fc"
     },
     {
       "path": "lib/erp-engine.ts",
-      "sha256": "ad0100191e212000543482eaeb0d251089aed21b77baf9deb7b0f24d326991c8"
+      "sha256": "30dd4844ac7cc88f98751907e0494fe72a85641f900ffb3d8893f04d3bf5836c"
     },
     {
       "path": "lib/erp-navigation.ts",
@@ -808,7 +837,7 @@
     },
     {
       "path": "lib/erp-store.ts",
-      "sha256": "0638c4e54c6d30e93a15662d48dc419199822206296424128ad27eb515e5fa5b"
+      "sha256": "d0e498117224a83fa1fd5cc6de02144e558791f08a812cae15222692e2f3fa49"
     },
     {
       "path": "lib/erp-ui.ts",
@@ -900,7 +929,7 @@
     },
     {
       "path": "lib/security.ts",
-      "sha256": "d8af70106e840466fc339bfa5da9cfd442d8e2c18d2c4a8cfbf8438fbc938c95"
+      "sha256": "d4cc7121be9af8a27992dd1436151974d42fc60b6f7b557829b6775448b9ee6f"
     },
     {
       "path": "lib/sql-database.ts",
@@ -924,7 +953,7 @@
     },
     {
       "path": "package.json",
-      "sha256": "906f48e69c0ad34e5751ddd7837c4769e7aff2d8f20e0ce1c2f2a7e7598533c1"
+      "sha256": "7197ce14a7c96317d016322c30c1cf7b79230fdff07f16a89ee6f46f47994641"
     },
     {
       "path": "postcss.config.mjs",
@@ -960,11 +989,15 @@
     },
     {
       "path": "review/Hagadol_CRM_Design_Preview.html",
-      "sha256": "3fabdf2ee0db4451917c4e514f819f266087d49e754236806b4a64527de6f3d0"
+      "sha256": "ef2626a3bdd43dfb1082088b9f6354aec452705e468b3136073ba3d5bf82c261"
     },
     {
       "path": "scripts/lint-ci.mjs",
       "sha256": "5620a1a64662de31b15b701b2dce8ef9cee174be340ce02bd606fb4d7ee867b3"
+    },
+    {
+      "path": "scripts/migrate-crm-preview.mjs",
+      "sha256": "49ee8ce93e6f021949c366bbde4697967f66b340161a8e9d7bdb3b1286ed6296"
     },
     {
       "path": "scripts/migrate.mjs",
@@ -1035,6 +1068,10 @@
       "sha256": "e6a84bcf42cd3b3b7216ee903476e5041941511dd2c394fe56381eb8d29c5e8a"
     },
     {
+      "path": "tests/crm-permission-ui-qa.mjs",
+      "sha256": "e63e0b468cf9b585caf9f40fa2e7ad675c0e14047ed9909980337d0d3cc57e03"
+    },
+    {
       "path": "tests/crm-pipeline-qa.mjs",
       "sha256": "822b47496c5c849b605c5f0dd18fda6857301bf2cf54511ec9bd6e4fc6991bec"
     },
@@ -1043,8 +1080,12 @@
       "sha256": "14f59c46a847a4238a0389d020ce71f0f97ab48dc1c813abdc9007a7268ea55e"
     },
     {
+      "path": "tests/crm-rbac-qa.mjs",
+      "sha256": "93f861963efb273450529a4e0c699c18ce43b375fa32af71fcc09c97098ff61b"
+    },
+    {
       "path": "tests/crm-workflow-qa.ts",
-      "sha256": "96e7943d952f3682320fe9815a352cb7abc9ff1bfd24eea8149cb4b571c996f8"
+      "sha256": "d63569b4038a1cd9502e8b2cf178e72b5f9cbf99f8fd163cd0d6d9ff9fceb52a"
     },
     {
       "path": "tests/dialog-qa.tsx",

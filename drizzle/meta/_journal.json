@@ -78,6 +78,13 @@
       "when": 1792764806558,
       "tag": "0010_finance_approval_metadata",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "6",
+      "when": 1792929747594,
+      "tag": "0011_crm_access_profiles",
+      "breakpoints": true
     }
   ]
 }
