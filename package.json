@@ -39,7 +39,8 @@
     "test:crm-workflow": "node --import tsx tests/crm-workflow-qa.ts",
     "test:finance-posting": "node scripts/run-qa.mjs full --import tsx tests/finance-posting-workflow-qa.ts",
     "test:crm-pipeline": "node scripts/run-qa.mjs full --loader ./tests/tsx-loader.mjs tests/crm-pipeline-qa.mjs",
-    "test:crm-handover": "node scripts/run-qa.mjs full --loader ./tests/tsx-loader.mjs tests/crm-handover-qa.mjs"
+    "test:crm-handover": "node scripts/run-qa.mjs full --loader ./tests/tsx-loader.mjs tests/crm-handover-qa.mjs",
+    "test:crm-preview": "node scripts/run-qa.mjs full --loader ./tests/tsx-loader.mjs tests/crm-import-preview-qa.mjs"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "3.1152.0",

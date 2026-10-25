@@ -1,27 +1,68 @@
 {
-  "date": "2026-10-24",
-  "kind": "CRM design handover review build",
-  "buildPassed": true,
-  "typecheckPassed": true,
-  "lintNewErrors": 0,
-  "lintExistingErrors": 373,
-  "lintWarnings": 53,
-  "checks": {
-    "crmHandover": 21,
+  "date": "2026-10-25",
+  "release": "1.3.1 CRM design rebuild",
+  "reference": "Gemini final CRM handover supplied by user",
+  "suites": {
     "crm": 95,
+    "crm_handover": 21,
     "pipeline": 25,
     "ui": 78,
     "layout": 108,
-    "crmWorkflow": 44,
-    "crmImport": 118,
-    "crmActivityImport": 29,
+    "crm_workflow_temporary_libsql": 44,
+    "crm_import": 118,
+    "crm_activity_import": 29,
     "finance": 92,
     "security": 261,
-    "httpAuthentication": 31
+    "bigin_file_preview": 32,
+    "browser_interactions": 38,
+    "production_http_authentication": 31
   },
-  "totalAssertions": 902,
-  "browserAcceptance": "pending",
-  "googleSignInRoundTrip": "not tested",
+  "totalAssertionsPassed": 972,
+  "failed": 0,
+  "build": "passed",
+  "typescript": "passed",
+  "lint": {
+    "newErrors": 0,
+    "inheritedErrors": 367,
+    "warnings": 53
+  },
+  "browser": {
+    "engine": "Chromium 153",
+    "viewports": [
+      {
+        "width": 1440,
+        "height": 1080
+      },
+      {
+        "width": 1024,
+        "height": 768
+      },
+      {
+        "width": 390,
+        "height": 844
+      }
+    ],
+    "actualClientComponents": true,
+    "syntheticData": true,
+    "liveDatabaseTested": false,
+    "liveGoogleOAuthRoundTripTested": false,
+    "nativeDragTested": true,
+    "keyboardFocusTested": true,
+    "financeNavigationRetained": true
+  },
+  "offlinePreview": {
+    "selfContained": true,
+    "sampleCreateTested": true,
+    "browserErrors": 0,
+    "mobileOverflow": false,
+    "tahomaLoaded": true
+  },
   "liveProductionTouched": false,
-  "newDatabaseMigrations": false
+  "databaseMigrationsAdded": false,
+  "limitations": [
+    "Browser tests use a local static fixture with actual ERP client components and the sample mutation engine.",
+    "Live Google authentication, real customer reconciliation and Vercel Preview acceptance remain to be checked.",
+    "Bigin file review is read only, not an import or repair approval workflow.",
+    "Existing lint debt remains visible."
+  ]
 }

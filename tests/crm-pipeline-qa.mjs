@@ -32,7 +32,7 @@ check(pipelineStageTotals(rows,'Lost').total===0,'Empty stage has zero total');
 check(JSON.stringify(rows)===snapshot,'Sorting and grouping do not mutate stored records');
 const props={records:rows.filter(row=>row.company==='Hagadol'),stages:['New','Qualified','Won','Lost'],busy:false,customer:()=> 'Example customer',onOpen:()=>{},onActivity:()=>{},onCreate:()=>{},onMove:async()=>false};
 const html=renderToStaticMarkup(React.createElement(PipelineBoard,props));
-for(const label of ['crmcolumncards','Move Example deal h1 to stage','Add activity','+ Deal']){
+for(const label of ['crmcolumncards','Move Example deal h1 to stage','Add activity','crmcolumnadd']){
   check(html.includes(label),'Board retains '+label);
 }
 check(html.includes('UGX 170,000'),'Hagadol New header shows only Hagadol total');

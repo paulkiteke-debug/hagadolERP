@@ -54,9 +54,9 @@ check(shell.includes('>Home</span>')&&shell.includes('>Settings</button>'),'Home
 check(!shell.includes('Find a module')&&!shell.includes('data-sidebar='),'The shell does not require the old sidebar widget');
 for(const company of ['Hagadol','WMK']){
  const form=await render(CRMForm,{type:'deal',company,records:sample.records,act:async()=>false,busy:false,onDirty:()=>{},onClose:()=>{},onSaved:()=>{}});
- check(form.includes('<details')&&form.includes('More opportunity details'),'Opportunity qualification is disclosed on request');
- for(const name of ['Opportunity name','Owner','Value UGX','Stage','Next action','Next follow up'])check(form.includes(name),'Essential opportunity field '+name+' retained');
- const extras=form.slice(form.indexOf('<summary>More opportunity details'),form.indexOf('</details>',form.indexOf('<summary>More opportunity details')));
+ check(form.includes('<details')&&form.includes('More deal details'),'Opportunity qualification is disclosed on request');
+ for(const name of ['Deal name','Owner','Value UGX','Stage','Next action','Next follow up'])check(form.includes(name),'Essential opportunity field '+name+' retained');
+ const extras=form.slice(form.indexOf('<summary>More deal details'),form.indexOf('</details>',form.indexOf('<summary>More deal details')));
  check(!extras.includes('required=""'),'Closed opportunity details contain no required input');
 }
 const finance=await render(Finance,{state:sample,company:'Hagadol',tab:'Overview',changeTab:()=>{},open:()=>{},onDetail:()=>{},payment:()=>{},act:async()=>{},busy:false,go:()=>{},onDirty:()=>{}});
