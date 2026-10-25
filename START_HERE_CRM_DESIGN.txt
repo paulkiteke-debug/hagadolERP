@@ -1,0 +1,19 @@
+HAGADOL ERP — CRM DESIGN REBUILD
+25 October 2026
+
+TO SEE THE NEW DESIGN NOW
+1. Extract this ZIP.
+2. Open review/Hagadol_CRM_Design_Preview.html in Chrome or Edge.
+3. Try Pipeline, Contacts, Companies, Activities & Tasks, the business switch,
+   a deal card, New deal, and Actions > Bigin import review.
+
+This clickable preview uses example records only. It does not need installation
+or login. Changes reset when you reload it.
+
+TO UPDATE YOUR VERCEL PREVIEW
+Follow docs/CRM_DESIGN_REBUILD.md. Use your existing crm-review branch and the
+separate CRM test database. Keep your private environment files and Git folder.
+The full ERP source is included. This update changes the CRM presentation and
+adds a read only CSV review; it does not require a new database migration.
+
+Do not import or repair live contacts as part of deploying this UI update.
