@@ -1,0 +1,65 @@
+{
+  "date": "2026-10-26",
+  "scope": "CRM commercial workflow update; retained ERP architecture",
+  "assertions": {
+    "commercialWorkflow": 66,
+    "crmRegression": 95,
+    "crmWorkflowDrizzle": 46,
+    "pipeline": 25,
+    "rbac": 70,
+    "security": 261,
+    "core": 262,
+    "ui": 78,
+    "finance": 92,
+    "migrations": 10,
+    "csvCapacity": 853,
+    "csvPreview": 32,
+    "legacyImport": 118,
+    "handoverUi": 21,
+    "permissionsUi": 12,
+    "browser": 48,
+    "governance": 284,
+    "financePosting": 40,
+    "layout": 108,
+    "productionHttp": 31
+  },
+  "totalAssertions": 2552,
+  "failures": 0,
+  "build": "passed Next production build and TypeScript",
+  "lint": {
+    "newErrors": 0,
+    "inheritedErrors": 341,
+    "warnings": 54,
+    "fingerprintRefresh": "No per-file/rule debt increase; checkout paths normalized; two inherited effect errors fixed"
+  },
+  "schemaConsistency": "Drizzle Kit reports no changes",
+  "newMigrations": [
+    "0013_crm_commercial_handover.sql",
+    "0014_request_execution_guard.sql"
+  ],
+  "browserViewports": [
+    1440,
+    1024,
+    390
+  ],
+  "browserData": "synthetic; actual components; import transport intercepted",
+  "databaseTests": "temporary local SQLite and libSQL; no remote customer database",
+  "googleRoundTripTested": false,
+  "productionDeployed": false,
+  "liveDatabaseChanged": false,
+  "staffAccountsChanged": false,
+  "outboundMessagesSent": false,
+  "testCoverage": [
+    "Exact retries and conflicting payloads",
+    "Concurrent request ID race does not enable writes",
+    "Concurrent matching replay cannot overwrite newer edits",
+    "Survey version and deal binding",
+    "Survey revocation between read and commit",
+    "Evidence ownership follows reassigned deal",
+    "WMK project handover without drilling survey",
+    "Won transition creates one linked project",
+    "Final evidence gate queues single internal service reminder",
+    "Historical wins do not invent close timestamps or projects",
+    "Original CSV capacity: 10000 contacts and 10000 companies"
+  ]
+}

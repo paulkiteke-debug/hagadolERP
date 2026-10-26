@@ -1,0 +1,18 @@
+'use client';
+import React from 'react';
+import type {State} from '@/lib/erp-primitives';
+import {day} from '@/lib/erp-primitives';
+import {officeSnapshot} from '@/lib/project-technical';
+import {RockProgress,TenderRadar} from './erp-leadership';
+const fmt=(v:number)=>new Intl.NumberFormat('en-UG',{maximumFractionDigits:1}).format(v||0);
+export default function OfficeBoard({state,company,date}:{state:State;company:string;date:string}){
+const s=officeSnapshot(state.records,company,date,day()),metric=(r:any)=><article className="wallmetric" key={r.id}><div><small>{r.company}</small><strong>{r.name}</strong></div><div><b>{r.actual===null?'Needs data':fmt(r.actual)+' '+r.unit}</b><small>Target {r.direction==='At most'?'≤':'≥'} {fmt(r.targetValue)}</small><span>{r.actual===null?'Needs data':(r.direction==='At most'?r.actual<=r.targetValue:r.actual>=r.targetValue)?'On target':r.direction==='At most'?'Above limit':'Below target'}</span></div></article>;
+return <div className="combinedwall">
+<section className="wallpane fieldpane"><header><h3>Field updates</h3><small>Latest recorded updates through {s.cutoff}</small></header>{s.field.map(r=><article className="wallentry" key={r.id}><small>{r.company} · {r.date} · {r.location}</small><h4>{r.name}</h4><p>{r.publicNote||'Office note pending'}</p></article>)}{!s.field.length&&<p className="wallempty">No field updates recorded.</p>}</section>
+<section className="wallpane"><header><h3>Project delivery</h3><small>Active and planned work</small></header>{s.projects.map(r=><article className="wallentry deliveryentry" key={r.id}><div><small>{r.company}</small><h4>{r.label}</h4><small>Target {r.due||'Not set'}</small></div><span>{r.stage}</span></article>)}{!s.projects.length&&<p className="wallempty">No active or planned projects.</p>}</section>
+<section className="wallpane metricpane"><header><h3>Monthly and quarterly metrics</h3><small>Targets with manual or linked actuals</small></header><h4 className="wallperiod">{s.month.label}</h4>{s.monthly.slice(0,4).map(metric)}{!s.monthly.length&&<p className="wallempty">No monthly targets recorded.</p>}<h4 className="wallperiod">{s.quarter.label}</h4>{s.quarterly.slice(0,3).map(metric)}{!s.quarterly.length&&<p className="wallempty">No quarterly targets recorded.</p>}</section>
+<section className="wallpane"><header><h3>Quarterly rocks</h3><small>{s.quarter.label} · Owners and outcomes</small></header>{s.rocks.map(r=><article className="wallentry deliveryentry" key={r.id}><div><small>{r.company} · {r.owner||'Owner required'}</small><h4>{r.name}</h4><small>Due {r.due}</small><RockProgress rock={r}/></div><span>{r.status}</span></article>)}{!s.rocks.length&&<p className="wallempty">No rocks recorded.</p>}</section>
+<section className="wallpane socialpane"><header><h3>Social activity and website traffic</h3><small>{s.month.label} · Recorded plans and snapshots</small></header><div className="walltraffic"><div><strong>{fmt(s.traffic.visits)}</strong><small>Website visits</small></div><div><strong>{fmt(s.traffic.leads)}</strong><small>Enquiries</small></div></div>{s.posts.map(r=><article className="wallentry" key={r.id}><small>{r.company} · {r.source} · {r.date}</small><h4>{r.name}</h4><span>{r.status==='Published'?'Recorded as published':r.status}</span></article>)}{!s.posts.length&&<p className="wallempty">No social activity recorded.</p>}<p className="wallcaption">Traffic uses manual snapshots wholly inside this month. Automatic platform feeds are awaiting setup.</p></section>
+<section className="wallpane tenderpane"><header><h3>Recorded bid deadlines</h3><small>Office titles selected by the bid owner</small></header><TenderRadar records={state.records} company={company} date={day()} office/></section>
+</div>;
+}

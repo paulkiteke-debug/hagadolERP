@@ -1,0 +1,78 @@
+import fs from 'node:fs';import os from 'node:os';import path from 'node:path';import assert from 'node:assert/strict';import {DatabaseSync} from 'node:sqlite';import {securityHarness} from './security-harness.mjs';
+const temp=fs.mkdtempSync(path.join(os.tmpdir(),'crm-commercial-')),sql=new DatabaseSync(':memory:');sql.exec('PRAGMA foreign_keys=ON');for(const f of fs.readdirSync('drizzle').filter(f=>f.endsWith('.sql')).sort())sql.exec(fs.readFileSync('drizzle/'+f,'utf8'));
+let beforeBatch;
+const DB={prepare(q){const make=(params=[])=>({sql:q,args:params,bind(...v){return make(v)},async first(){return sql.prepare(q).get(...params)||null},async all(){return {results:sql.prepare(q).all(...params)}},async run(){return sql.prepare(q).run(...params)}});return make()},async batch(items){if(beforeBatch){const hook=beforeBatch;beforeBatch=undefined;await hook(items);}sql.exec('BEGIN');try{const r=items.map(s=>sql.prepare(s.sql).run(...s.args));sql.exec('COMMIT');return r}catch(e){sql.exec('ROLLBACK');throw e}}};
+globalThis.__commercialDB={DB,ERP_OWNER_EMAIL:'owner@example.invalid'};globalThis.__commercialUser={userId:'owner',email:'owner@example.invalid',displayName:'Owner'};
+const h=securityHarness(temp,'__commercialDB','__commercialUser'),route=await import(h.compile('app/api/erp/route.ts')),accessRoute=await import(h.compile('app/api/access/route.ts')),commercial=await import(h.compile('lib/crm-commercial.ts')),engine=await import(h.compile('lib/erp-engine.ts'));
+let passed=0,n=0;const check=(v,m)=>{assert.ok(v,m);passed++},today=engine.day(),future='2099-01-01';
+async function call(body,status=200,r=route){const response=await r.POST(new Request('https://erp.local/api/erp',{method:'POST',headers:{Origin:'https://erp.local','Content-Type':'application/json'},body:JSON.stringify({requestId:'commercial-'+(++n),...body})})),data=await response.json();check(response.status===status,'Expected '+status+', got '+response.status+': '+JSON.stringify(data));return data;}
+const record=id=>{const r=sql.prepare('SELECT * FROM records WHERE id=?').get(id);return {...JSON.parse(r.payload),version:r.version};};
+function seed(r){sql.prepare('INSERT INTO records(id,company,type,name,status,amount,version,date,due,payload,created) VALUES(?,?,?,?,?,?,0,?,?,?,?)').run(r.id,r.company,r.type,r.name,r.status,r.amount||0,r.date||today,r.due||'',JSON.stringify({paid:0,credited:0,version:0,date:today,due:'',created:new Date().toISOString(),...r}),new Date().toISOString());}
+try{
+ await call({action:'create',type:'deal',company:'Hagadol',name:'Missing value',owner:'Owner',customer:'Buyer',closingDate:future},400);
+ await call({action:'create',type:'deal',company:'Hagadol',name:'Missing date',owner:'Owner',customer:'Buyer',amount:1000},400);
+ await call({action:'create',type:'deal',company:'Hagadol',name:'Bad date',owner:'Owner',customer:'Buyer',amount:1000,closingDate:'2026-02-30'},400);
+ check(commercial.crmDateKey('2026-10-25T22:30:00Z')==='2026-10-26','Reporting periods use Kampala dates across UTC midnight');
+ const owner=(await route.GET(new Request('https://erp.local/api/erp'))).status;check(owner===200,'Owner can load workspace');
+ const rep=await call({email:'rep@example.invalid',role:'Sales',crmProfile:'sales_rep',companies:['Hagadol']},200,accessRoute),field=await call({email:'field@example.invalid',role:'Sales',crmProfile:'field_ops',companies:['Hagadol']},200,accessRoute);
+ for(const company of ['Hagadol','WMK'])seed({id:company+'-buyer',type:'crm_company',company,name:'Synthetic buyer',status:'Active',taxReference:'TEST-TIN',billingAddress:'Test address',billingVerification:{address:'Test address',taxReference:'TEST-TIN',verifiedBy:'owner@example.invalid',verifiedAt:new Date().toISOString()}});
+ const makeDeal=(company,extra={})=>call({action:'create',type:'deal',company,crm:true,name:company+' synthetic deal',owner:'Owner',customer:'Synthetic buyer',crmCompanyId:company+'-buyer',amount:1000,closingDate:future,designBrief:'Confirmed design brief',technicalSiteSurvey:{reference:'SUR-1',assessedBy:'Assessor',assessedOn:today,findings:'Source readings'},siteAssessmentAttachment:{name:'Assessment',url:'https://example.invalid/assessment'},contractMetadata:{reference:'CON-1',signedOn:today,clientName:'Synthetic buyer'},contractAttachment:{name:'Contract',url:'https://example.invalid/contract'},...extra});
+ const deal=await makeDeal('Hagadol',{businessLine:'Boreholes',crmOwnerId:rep.id});
+ await call({action:'stage',id:deal.id,status:'Quotation',expectedVersion:0},422);
+ const doc=await call({action:'create',type:'document',company:'Hagadol',crmEvidence:true,dealId:deal.id,name:'Synthetic survey',documentKind:'Hydrogeological survey',classification:'Verified Evidence',owner:'Owner',reviewDue:future,sourceRef:'SUR-1',sourceUrl:'https://example.invalid/survey',revisionLabel:'1.0',crmVerification:{decision:'Approved'}});
+ check(!record(doc.id).crmVerification,'Cannot forge verification metadata');
+ await call({action:'stage',id:doc.id,status:'Review',expectedVersion:0});await call({action:'stage',id:doc.id,status:'Verified',expectedVersion:1});
+ check(record(doc.id).crmVerification.documentVersion===2&&record(doc.id).crmVerification.dealId===deal.id,'Verification binds current document version and deal');
+ await call({action:'edit',id:deal.id,expectedVersion:0,fields:{surveyDocumentId:doc.id}});
+ const quote=await call({action:'create',type:'quote',company:'Hagadol',dealId:deal.id,name:'Synthetic quote',lines:[{description:'Work',qty:1,rate:1000}],taxRate:0});await call({action:'approve_quote',id:quote.id,expectedVersion:0});
+ await call({action:'edit',id:deal.id,expectedVersion:1,fields:{approvedQuoteId:quote.id,targetHandoverDate:future}});
+ const win={requestId:'fixed-win',action:'stage',id:deal.id,status:'Won',expectedVersion:2};const won=await call(win),projectId=won.linkedRecordIds[0];
+ check(record(deal.id).status==='Won'&&record(projectId).sourceDealId===deal.id,'Deal and single linked project committed');
+ check(record(projectId).due===future&&record(deal.id).closingDate===future,'Delivery and close date remain independent fields');
+ await call(win);check(sql.prepare("SELECT COUNT(*) n FROM records WHERE type='project'").get().n===1,'Exact retry returns without duplicate project');
+ await call({...win,targetHandoverDate:'2099-02-01'},409);
+ await call({...win,requestId:'different-win',expectedVersion:3,targetHandoverDate:'2099-02-01'},400);
+ await call({action:'edit',id:deal.id,expectedVersion:3,fields:{notes:'Keep handover and close date'}});
+ check(record(deal.id).closedAt&&record(deal.id).projectHandover.projectId===projectId,'Note edits preserve close and handover metadata');
+ const other=await makeDeal('Hagadol',{businessLine:'Boreholes'});
+ await call({action:'edit',id:other.id,expectedVersion:0,fields:{surveyDocumentId:doc.id}});await call({action:'stage',id:other.id,status:'Quotation',expectedVersion:1},422);
+ await call({action:'stage',id:doc.id,status:'Draft',expectedVersion:2});
+ check(commercial.surveyIssues(record(deal.id),[record(doc.id)],today).length===1,'Revoked verification cannot satisfy survey guard');
+ await call({action:'stage',id:doc.id,status:'Review',expectedVersion:3});await call({action:'stage',id:doc.id,status:'Verified',expectedVersion:4});
+ check(record(doc.id).crmVerification.documentVersion===5,'Reverification binds the new document version');
+ const wmk=await makeDeal('WMK'),wquote=await call({action:'create',type:'quote',company:'WMK',dealId:wmk.id,name:'WMK quote',lines:[{description:'Design',qty:1,rate:1000}]});await call({action:'approve_quote',id:wquote.id,expectedVersion:0});await call({action:'edit',id:wmk.id,expectedVersion:0,fields:{approvedQuoteId:wquote.id,targetHandoverDate:'2099-03-01'}});const wwon=await call({action:'stage',id:wmk.id,status:'Won',expectedVersion:1});check(record(wwon.linkedRecordIds[0]).projectKind==='Architecture','WMK starts architectural project without hydro requirement');
+ const target=await call({action:'create',type:'crm_target',company:'Hagadol',name:'Quarter sales target',date:today,due:future,targetContractValue:2000,targetWonDealsCount:2});
+ check(record(target.id).targetContractValue===2000,'Company target saved in existing records');
+ globalThis.__commercialUser={userId:'rep',email:'rep@example.invalid',displayName:'Rep'};await call({action:'create',type:'crm_target',company:'Hagadol',name:'Denied target',date:today,due:future,targetContractValue:100},403);await call({action:'stage',id:doc.id,status:'Draft',expectedVersion:5},403);
+ globalThis.__commercialUser={userId:'field',email:'field@example.invalid',displayName:'Field'};await call({action:'stage',id:deal.id,status:'Lost',expectedVersion:4,lostReason:'No'},403);
+ globalThis.__commercialUser={userId:'owner',email:'owner@example.invalid',displayName:'Owner'};
+ const state=(await (await route.GET(new Request('https://erp.local/api/erp'))).json());const stats=commercial.crmPerformance(state.records,today,today,today);check(stats.won.length===2&&stats.leaders.reduce((n,r)=>n+r.value,0)===2000,'Recorded wins aggregate contract value by period');
+ check(commercial.commercialReview({amount:0}).length===2,'Historical gaps flagged without inventing values');
+ check(sql.prepare('SELECT COUNT(*) n FROM journal').get().n===0,'CRM handovers and targets never post ledger entries');
+
+ const current=record(deal.id);
+ beforeBatch=items=>{const a=items[0].args;sql.prepare('INSERT INTO operations(id,company,result,created,actor,request_hash,execution_key) VALUES(?,?,?,?,?,?,?)').run(a[0],a[1],a[2],a[3],a[4],'different-request','other-execution');};
+ await call({requestId:'racing-conflict',action:'edit',id:deal.id,expectedVersion:current.version,fields:{notes:'Must not save'}},409);
+ check(record(deal.id).version===current.version,'Concurrent request reference conflict causes no write');
+ beforeBatch=items=>{const a=items[0].args;sql.prepare('INSERT INTO operations(id,company,result,created,actor,request_hash,execution_key) VALUES(?,?,?,?,?,?,?)').run(a[0],a[1],a[2],a[3],a[4],a[5],'earlier-execution');sql.prepare("UPDATE records SET version=version+2,payload=json_set(payload,'$.notes','Newer saved information') WHERE id=?").run(deal.id);};
+ await call({requestId:'racing-replay',action:'edit',id:deal.id,expectedVersion:current.version,fields:{notes:'Stale replay'}});
+ check(record(deal.id).notes==='Newer saved information'&&record(deal.id).version===current.version+2,'Exact concurrent replay returns stored result without overwriting a newer edit');
+ const bound=await makeDeal('Hagadol',{businessLine:'Boreholes'}),boundDoc=await call({action:'create',type:'document',company:'Hagadol',crmEvidence:true,dealId:bound.id,name:'Race survey',documentKind:'Hydrogeological survey',classification:'Verified Evidence',owner:'Owner',reviewDue:future,sourceRef:'RACE-1',sourceUrl:'https://example.invalid/race',revisionLabel:'1'});
+ await call({action:'stage',id:boundDoc.id,status:'Review',expectedVersion:0});await call({action:'stage',id:boundDoc.id,status:'Verified',expectedVersion:1});await call({action:'edit',id:bound.id,expectedVersion:0,fields:{surveyDocumentId:boundDoc.id}});
+ beforeBatch=()=>sql.prepare("UPDATE records SET version=version+1,status='Draft',payload=json_set(payload,'$.status','Draft') WHERE id=?").run(boundDoc.id);
+ await call({action:'stage',id:bound.id,status:'Quotation',expectedVersion:1},409);
+ check(record(bound.id).status==='New','Revocation between read and commit prevents stage advancement');
+ const otherRep=await call({email:'other@example.invalid',role:'Sales',crmProfile:'sales_rep',companies:['Hagadol']},200,accessRoute);
+ await call({action:'edit',id:deal.id,expectedVersion:record(deal.id).version,fields:{crmOwnerId:otherRep.id}});
+ globalThis.__commercialUser={userId:'rep',email:'rep@example.invalid',displayName:'Rep'};
+ const oldRepState=await (await route.GET(new Request('https://erp.local/api/erp'))).json();check(!oldRepState.records.some(r=>r.id===doc.id),'Reassigning a deal removes old rep access to its evidence');
+ globalThis.__commercialUser={userId:'other',email:'other@example.invalid',displayName:'Other'};
+ const newRepState=await (await route.GET(new Request('https://erp.local/api/erp'))).json();check(newRepState.records.some(r=>r.id===doc.id),'Evidence access follows current deal ownership');
+ globalThis.__commercialUser={userId:'owner',email:'owner@example.invalid',displayName:'Owner'};
+ // Full project final gate creates one internal CRM review task using existing gates.
+ const project=record(projectId);project.lifecycleStage='Care';project.status='Active';seed({id:'care-proof',type:'document',company:'Hagadol',name:'Care plan',status:'Verified',projectId,classification:'Verified Evidence',documentKind:'Care plan',verifiedBy:'Owner',verifiedAt:new Date().toISOString(),reviewDue:future});
+ const fullState={records:[project,record(deal.id),record('Hagadol-buyer'),record('care-proof')],journal:[],audit:[]};const plan=engine.buildPlan({action:'advance_gate',requestId:'final-gate',id:projectId,expectedVersion:project.version,documentIds:['care-proof'],documentVersions:{'care-proof':0},decision:'Evidence reviewed',confirmed:true,actor:'owner@example.invalid'},fullState);
+ check(plan.writes.some(r=>r.type==='task'&&r.serviceFollowUp&&r.dealId===deal.id),'Verified final gate queues customer service review');
+ const imported=engine.buildPlan({action:'create',type:'deal',company:'Hagadol',crm:true,name:'Historical win',owner:'Imported owner',customer:'Imported buyer',crmStage:'Won'}, {records:[],journal:[],audit:[]}, {preserveHistoricalCRMStages:true});check(imported.writes.length===1&&!imported.writes[0].closedAt&&!imported.writes[0].projectHandover,'Historical wins do not invent closing dates or create retrospective projects');
+ console.log(JSON.stringify({passed,failed:0,realApiAndTransactions:true,liveProductionTouched:false}));
+}finally{sql.close();fs.rmSync(temp,{recursive:true,force:true});}
