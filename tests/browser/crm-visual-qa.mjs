@@ -6,7 +6,7 @@ import {readFile,writeFile} from 'node:fs/promises';
 import {resolve,extname} from 'node:path';
 const {chromium}=await import(process.env.PLAYWRIGHT_MODULE||'playwright');
 const root=resolve(process.env.CRM_PREVIEW_OUTPUT||'/tmp/hagadol-crm-browser-preview');
-const server=createServer(async(req,res)=>{try{const path=resolve(root,'.'+(req.url==='/'?'/index.html':new URL(req.url,'http://localhost').pathname));if(!path.startsWith(root+'/'))throw Error('Invalid path');const bytes=await readFile(path);res.setHeader('Content-Type',({'.js':'text/javascript','.css':'text/css','.ttf':'font/ttf','.png':'image/png','.html':'text/html'})[extname(path)]||'application/octet-stream');res.end(bytes);}catch{res.statusCode=404;res.end('Not found');}});
+const server=createServer(async(req,res)=>{try{const path=resolve(root,'.'+(new URL(req.url,'http://localhost').pathname==='/'?'/index.html':new URL(req.url,'http://localhost').pathname));if(!path.startsWith(root+'/'))throw Error('Invalid path');const bytes=await readFile(path);res.setHeader('Content-Type',({'.js':'text/javascript','.css':'text/css','.ttf':'font/ttf','.png':'image/png','.html':'text/html'})[extname(path)]||'application/octet-stream');res.end(bytes);}catch{res.statusCode=404;res.end('Not found');}});
 await new Promise(r=>server.listen(0,'127.0.0.1',r));
 const url='http://127.0.0.1:'+server.address().port;
 const browser=await chromium.launch({headless:true,...(process.env.CHROMIUM_EXECUTABLE?{executablePath:process.env.CHROMIUM_EXECUTABLE}:{}),args:['--no-sandbox','--disable-gpu','--use-gl=angle','--use-angle=swiftshader','--enable-unsafe-swiftshader']});
@@ -100,6 +100,28 @@ try{
  check((await page.locator('.crm-import-review tbody tr').nth(1).innerText()).includes('+256700001002'),'Import preview keeps the second telephone on its own row');
  check(await page.getByRole('button',{name:/Approve|Post import|Confirm import/}).count()===0,'Preview has no posting action');
  await page.screenshot({path:root+'/import-review.png',fullPage:true});await page.keyboard.press('Escape');
+ // Owner import UI: actual component, intercepted transport; the route itself
+ // has separate real SQL tests. No production session or database is used.
+ const actions=[];
+ await page.route('**/api/crm-csv-imports',async route=>{
+  const body=route.request().postDataJSON();actions.push(body);
+  const summary={total:2,ready:2,skipped:0,duplicates:0,errors:0,issues:[]};
+  await route.fulfill({json:{id:'synthetic-session',status:body.action==='review'?'Review':body.action==='approve'?'Approved':body.action==='post'?'Complete':'Uploading',cursor:body.action==='post'?2:0,summary}});
+ });
+ await page.goto(url+'/?import-test');
+ await page.getByLabel('Choose a Bigin CSV').setInputFiles({name:'Contacts_Export.csv',mimeType:'text/csv',buffer:Buffer.from(csv)});
+ await page.getByRole('button',{name:'Check with ERP',exact:true}).click();
+ await page.getByRole('button',{name:'Approve and import',exact:true}).waitFor();
+ check(!actions.some(a=>a.action==='approve'||a.action==='post'),'Review never approves or posts');
+ check(await page.getByRole('button',{name:'Approve and import',exact:true}).isDisabled(),'Explicit review confirmation is required');
+ await page.getByRole('checkbox',{name:/I confirm assignment/}).check();
+ await page.getByRole('button',{name:'Approve and import',exact:true}).click();
+ await page.getByRole('status').filter({hasText:'Import complete'}).waitFor();
+ check(actions.map(a=>a.action).join(',')==='start,stage,review,approve,post','Review, approval and posting follow the intended order');
+ check(actions.find(a=>a.action==='stage').rows[0].source.Phone==='+256700001001','Upload payload keeps the first phone on its own row');
+ await page.setViewportSize({width:390,height:844});await noOverflow('Mobile import approval');
+ await page.screenshot({path:root+'/import-approval.png',fullPage:true});
+ await page.unroute('**/api/crm-csv-imports');
  // Narrow screens and real keyboard containment.
  await reset();await page.setViewportSize({width:390,height:844});
  await noOverflow('Mobile board');

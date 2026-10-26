@@ -1,7 +1,8 @@
 {
-  "release": "1.3.1 CRM access update",
+  "release": "1.3.1 CRM original Bigin CSV import",
   "date": "2026-10-25",
-  "migrationRequired": "0011_crm_access_profiles.sql",
+  "migrationRequired": "0012_crm_csv_staging.sql",
+  "maxRecordsPerCSV": 10000,
   "files": [
     {
       "path": ".env.example",
@@ -9,7 +10,7 @@
     },
     {
       "path": ".github/workflows/qa.yml",
-      "sha256": "4588ce5ed86c7f505dc25804025f20191ea725864939639ad3e900261d8e56de"
+      "sha256": "ef34a9a8d3567cf408bf6c6be352588afc653ec3003dbe66e2a0d02ace6dd3ed"
     },
     {
       "path": ".gitignore",
@@ -22,6 +23,10 @@
     {
       "path": "CRM_ACCESS_QA.json",
       "sha256": "03a8b4aa0086f68f28e5d400e8bcc7e051a68550fc347ab0d6b192940d3a3373"
+    },
+    {
+      "path": "CRM_CSV_QA.json",
+      "sha256": "555684dfd8ad9e4565d3facd9e2fc8b9e50d9ead27e8059ed2cbe0b24f2b1bac"
     },
     {
       "path": "CRM_REVIEW_QA.json",
@@ -81,7 +86,11 @@
     },
     {
       "path": "START_HERE_CRM_ACCESS.txt",
-      "sha256": "27e0ae69a91652b37ee46ee9b57d1b615b29ba9916415919d4815405313f6350"
+      "sha256": "24c45c5c4ee3aae95e4030cb63efed16e6e57589fe22f0f3289caaa2a58472d8"
+    },
+    {
+      "path": "START_HERE_CRM_CSV.txt",
+      "sha256": "c8ba9316ed21b76a295c5e6b2f02ba7ed360797314c81aaac159bf9054f7110f"
     },
     {
       "path": "START_HERE_CRM_DESIGN.txt",
@@ -98,6 +107,10 @@
     {
       "path": "app/api/auth/[...nextauth]/route.ts",
       "sha256": "e65edae0bab3090de488c164b9705d798bd1414a10eb8eb38d40eff6464ce1fc"
+    },
+    {
+      "path": "app/api/crm-csv-imports/route.ts",
+      "sha256": "10ab539f12dfa0bfe868e5a16e035245d33da73d58d911be3621703f5c314729"
     },
     {
       "path": "app/api/crm-imports/route.ts",
@@ -141,7 +154,7 @@
     },
     {
       "path": "app/crm-design.css",
-      "sha256": "562f53aefcb7decb43f45dec4a2cfd1889948ed1b7bf096c1d931178dbfe4973"
+      "sha256": "f346642ddb0f8280ac83508f1de1733dd118a9178ebc8cfd728e8dd6486e1be4"
     },
     {
       "path": "app/crm-drawer.tsx",
@@ -149,7 +162,7 @@
     },
     {
       "path": "app/crm-import-preview.tsx",
-      "sha256": "2529a5f32c7ed2b9c3198480232bf5750740c1b5b8b5314030c0ab6711e40991"
+      "sha256": "914c2571d80278fe47e539412f5300efefc301373da8c8229f308cd627e14510"
     },
     {
       "path": "app/crm-pipeline-board.tsx",
@@ -201,7 +214,7 @@
     },
     {
       "path": "app/erp-crm.tsx",
-      "sha256": "68b0afc79985684bae1df6ad2da50e2a195541ba9e72ed3afe6971061bbb73c3"
+      "sha256": "048fbb8cb1d88d5fe5ac5c00716fcee5fe0515d6709c73c0508b51aa1716cdd8"
     },
     {
       "path": "app/erp-deferred.tsx",
@@ -581,7 +594,7 @@
     },
     {
       "path": "db/schema.ts",
-      "sha256": "a8e098ff3669931f0692a547168a2177e628749119eb3047e2dc4e69a5b289ba"
+      "sha256": "14b4fbb4846beb3c7367ce2eb1e4836ec5a76af3e470ab86bcb793e93d5ba5cd"
     },
     {
       "path": "docs/CI_DEPLOYMENT_CHECKS.md",
@@ -590,6 +603,10 @@
     {
       "path": "docs/CRM_ACCESS_UPDATE.md",
       "sha256": "eb8795d90c3391fbeeb068e81ee81223a0ccd6ed9a049f03422f9e6115edd411"
+    },
+    {
+      "path": "docs/CRM_CSV_IMPORT.md",
+      "sha256": "2f760590f0d8b3c3818dad67f9594ee23476449c0df6354df39b15a854359432"
     },
     {
       "path": "docs/CRM_DESIGN_REBUILD.md",
@@ -704,6 +721,10 @@
       "sha256": "f450d4423c24394966b5b311a6db72ded06eaadaf43c880b1021875098f689b7"
     },
     {
+      "path": "drizzle/0012_crm_csv_staging.sql",
+      "sha256": "52dbc025fde8652a6ac66c1e548922bd9bdd83c7efc73070ccc0b979b40199d5"
+    },
+    {
       "path": "drizzle/meta/0000_snapshot.json",
       "sha256": "bc0b98a365532b051ff6f8d829d3452becbebc6d438203196e92d5b7068cf82d"
     },
@@ -752,8 +773,12 @@
       "sha256": "fd8f123e54bf2276977518472d9600dd1bf275373adbacfb9492cf983cd610b8"
     },
     {
+      "path": "drizzle/meta/0012_snapshot.json",
+      "sha256": "5344f26f5b74cfbdc7f9a9a111d7a61b1f4222390c148e680d01fe41f434f3b1"
+    },
+    {
       "path": "drizzle/meta/_journal.json",
-      "sha256": "3d82b4687ef903405ced281c0787ab9c08b894bf955e6b3c3dfb8b42d4264a1c"
+      "sha256": "6bffca6e62bccb56c941d7ea8c40a858d94604571e6b7ee02cd489968c6f36bd"
     },
     {
       "path": "eslint.config.mjs",
@@ -792,12 +817,16 @@
       "sha256": "b7c0940e64316f5f9021ca2e6708d08072903214e32baefcc27d266184cc9468"
     },
     {
+      "path": "lib/crm-csv.ts",
+      "sha256": "2a65ae7351baf39ceaa439ecfd4c5b89473c3d029c2279d4e0ad24020f658ba0"
+    },
+    {
       "path": "lib/crm-data.ts",
       "sha256": "58315e40c31f207f064c556a169a849f9bdb1c024b6b1f72db90937d9667d1da"
     },
     {
       "path": "lib/crm-import-preview.ts",
-      "sha256": "ee27314991fc03d9abb0d136167709aab07155c380d6d9af877409ccc8be5d9a"
+      "sha256": "7cdd176ea581dd898094061dfe0ee6bd763dc76d6128aa6584607c591564244e"
     },
     {
       "path": "lib/crm-import.ts",
@@ -953,7 +982,7 @@
     },
     {
       "path": "package.json",
-      "sha256": "7197ce14a7c96317d016322c30c1cf7b79230fdff07f16a89ee6f46f47994641"
+      "sha256": "69c4246d3bd1f41fdda400cfb0287f42b5f69a46869c41aff13809e14507dc1e"
     },
     {
       "path": "postcss.config.mjs",
@@ -989,7 +1018,7 @@
     },
     {
       "path": "review/Hagadol_CRM_Design_Preview.html",
-      "sha256": "ef2626a3bdd43dfb1082088b9f6354aec452705e468b3136073ba3d5bf82c261"
+      "sha256": "ade257de411707d74a08d7b957a9c0db46ce5079c526b766ddb065d3994402ea"
     },
     {
       "path": "scripts/lint-ci.mjs",
@@ -1033,11 +1062,11 @@
     },
     {
       "path": "tests/browser/crm-fixture.tsx",
-      "sha256": "a34a4586926d209555febcff9fc8511316b139b1aea8097b53030268afac9c83"
+      "sha256": "5654107b5fddbbf4f71a616ca0c8c126a4e2ceeeda378b72f326d80e22e5dcaa"
     },
     {
       "path": "tests/browser/crm-visual-qa.mjs",
-      "sha256": "5038b74241359bbe508b5a5dc03ae402561f562b47d40be13becf67f587739c9"
+      "sha256": "09577e70c54cd229c9599db77caab1f067249b93b053fd540b117b12927bc04c"
     },
     {
       "path": "tests/bundle-qa.mjs",
@@ -1054,6 +1083,10 @@
     {
       "path": "tests/crm-activity-import-qa.mjs",
       "sha256": "3ef021e6ef118693ce75bd786635ad89f1b985aa6f70b1fe6d236e9dbd2183ac"
+    },
+    {
+      "path": "tests/crm-csv-import-qa.mjs",
+      "sha256": "59f33ce6afe80af8eeb7fc161f9389df3de46051c432cc118d06b899c1640e35"
     },
     {
       "path": "tests/crm-handover-qa.mjs",

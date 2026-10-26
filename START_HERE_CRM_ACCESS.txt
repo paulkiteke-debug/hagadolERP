@@ -1,3 +1,5 @@
+CURRENT PACKAGE: Follow START_HERE_CRM_CSV.txt first. This package also requires migration 0012_crm_csv_staging.sql.
+
 HAGADOL ERP — CRM ACCESS UPDATE
 25 October 2026
 

@@ -55,3 +55,18 @@ export const financeImportPostings=sqliteTable('finance_import_postings',{
  rowKey:text('row_key').notNull(),company:text('company').notNull(),economicKey:text('economic_key').notNull(),
  recordId:text('record_id').notNull().references(()=>records.id),postedAt:text('posted_at').notNull(),
 },t=>[uniqueIndex('finance_posting_source_row').on(t.importId,t.rowKey),uniqueIndex('finance_posting_economic_key').on(t.company,t.economicKey)]);
+
+// Raw Bigin CSV staging is separate from business records. No customer is
+// created until the complete upload has passed review and an owner approves it.
+export const crmCsvSessions=sqliteTable('crm_csv_sessions',{
+ id:text('id').primaryKey(),company:text('company').notNull(),actor:text('actor').notNull(),
+ filename:text('filename').notNull(),sourceHash:text('source_hash').notNull(),manifestHash:text('manifest_hash').notNull(),
+ kind:text('kind').notNull(),expectedRows:integer('expected_rows').notNull(),
+ status:text('status').notNull().default('Uploading'),cursor:integer('cursor').notNull().default(0),
+ payload:text('payload').notNull().default(''),summary:text('summary').notNull().default('{}'),
+ approvedBy:text('approved_by'),created:text('created').notNull(),
+},t=>[uniqueIndex('crm_csv_company_source').on(t.company,t.sourceHash),check('crm_csv_row_limit',sql`${t.expectedRows} BETWEEN 1 AND 10000`),check('crm_csv_status',sql`${t.status} IN ('Uploading','Review','Approved','Complete')`)]);
+export const crmCsvRows=sqliteTable('crm_csv_rows',{
+ sessionId:text('session_id').notNull().references(()=>crmCsvSessions.id),
+ ordinal:integer('ordinal').notNull(),sourceId:text('source_id').notNull(),rowHash:text('row_hash').notNull(),source:text('source').notNull(),
+},t=>[uniqueIndex('crm_csv_ordinal').on(t.sessionId,t.ordinal),uniqueIndex('crm_csv_source_id').on(t.sessionId,t.sourceId)]);

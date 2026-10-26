@@ -42,7 +42,8 @@
     "test:crm-handover": "node scripts/run-qa.mjs full --loader ./tests/tsx-loader.mjs tests/crm-handover-qa.mjs",
     "test:crm-preview": "node scripts/run-qa.mjs full --loader ./tests/tsx-loader.mjs tests/crm-import-preview-qa.mjs",
     "test:crm-rbac": "node scripts/run-qa.mjs full tests/crm-rbac-qa.mjs",
-    "test:crm-permissions-ui": "node scripts/run-qa.mjs full --loader ./tests/tsx-loader.mjs tests/crm-permission-ui-qa.mjs"
+    "test:crm-permissions-ui": "node scripts/run-qa.mjs full --loader ./tests/tsx-loader.mjs tests/crm-permission-ui-qa.mjs",
+    "test:crm-csv": "node scripts/run-qa.mjs full tests/crm-csv-import-qa.mjs"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "3.1152.0",

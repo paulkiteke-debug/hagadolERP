@@ -1,3 +1,4 @@
+import CRMImportPreviewPanel from '../../app/crm-import-preview';
 // Local browser QA only. Synthetic records; no database or authentication bypass.
 import React from 'react';
 import {createRoot} from 'react-dom/client';
@@ -27,4 +28,4 @@ const state:State={journal:[],audit:[],records:[
  record('task-h3','task','Review the technical proposal',{due:date(2),dealId:'deal-h4',activityKind:'Task'}),
  record('task-w1','task','Gather the customer design brief',{company:'WMK',due:today,dealId:'deal-w1',activityKind:'Meeting'}),
 ]};
-createRoot(document.getElementById('root')!).render(<ERP initial={{view:'CRM',company:'Hagadol',tab:'Pipeline',sample:true,state}}/>);
+createRoot(document.getElementById('root')!).render(location.search.includes('import-test')?<CRMImportPreviewPanel company="Hagadol" records={[]} canImport/>:<ERP initial={{view:'CRM',company:'Hagadol',tab:'Pipeline',sample:true,state}}/>);
