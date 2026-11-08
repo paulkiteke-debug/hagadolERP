@@ -1,0 +1,39 @@
+Review this Hagadol ERP CRM independently. Read the complete source before proposing changes. The application is already deployed to Vercel, with Drizzle and Turso/libSQL. Inspect package.json for actual versions; the installed framework is Next.js 16, not the Next.js 15 mentioned in older briefs.
+
+Scope
+1. CRM companies, contacts, activities, pipeline display, pipeline filters, stage changes and data integrity.
+2. Compare the attached Bigin screenshot with app/crm-pipeline-board.tsx and app/erp-crm.tsx. The intended layout has a pipeline selector, compact deal cards, stage counts and totals, independent stage scrolling, horizontal board scrolling, sorting, card actions and guarded stage moves. Keep Hagadol branding and the distinct Hagadol and WMK workflows.
+3. Review lib/crm.ts, lib/crm-data.ts, lib/crm-import.ts, lib/crm-pipeline.ts, lib/erp-engine.ts, app/api/crm/route.ts, app/api/crm-imports/route.ts, db/schema.ts and generated migrations.
+4. Review whether stage history and interaction history are correctly displayed by the browser. Distinguish implemented APIs from controls actually exposed in forms. Some billing verification, survey and contract evidence controls still need frontend integration.
+
+Local setup
+If your Gemini session cannot execute Node or access a test database/browser, perform a source review and mark execution checks NOT RUN. A statement that tests should pass is not test evidence.
+
+Use Node 24 and npm ci. Run these commands separately:
+npm run test:crm
+npm run test:crm-workflow
+npm run test:crm-import
+npm run test:crm-activity-import
+npm run test:crm-pipeline
+npm run test:security
+npm run test:migrations
+npm run lint:ci
+npm run build
+npm run typecheck
+
+Never apply migrations to a production database. Use a fresh temporary local libSQL database or a separate Turso test database. The test suites identify when they use temporary databases. Do not use drizzle-kit push on production. Do not request or include .env.local, production tokens, authentication secrets, database backups or staff credentials in your response or source archive. This archive contains no production data export.
+
+Real data checks
+In ERP select the business, open CRM Pipeline, choose All pipelines, clear search and owner/source filters, choose Show All, then More and Export view. Repeat separately for Hagadol and WMK. The updated CSV contains ERP record ID, version, source pipeline/subpipeline, created time, stored status, canonical stage, value and Bigin source IDs. Reconcile the same scope in the Bigin export. This export enhancement is in the prepared update and becomes available after deployment.
+
+Ask Paul for anonymised source Bigin exports and corresponding ERP exports for the same business, pipeline and scope. Keep row identifiers, company assignments, source pipeline names, original stages, numeric values and dates. Replace customer names consistently and remove personal phone numbers and emails. A screenshot alone is insufficient for reconciliation.
+
+Reconcile source and ERP row counts, distinct source IDs, deals per business and source pipeline, deals per stage, value per stage, total value, closed status, owners and follow up dates. Compare canonical ERP stages against the documented Bigin stage mapping, while retaining original Bigin stage values. Identify each unmatched or duplicate candidate by a stable record identifier. Do not silently merge, delete or reclassify records.
+
+Browser acceptance
+On an isolated test deployment, check widths of 1440, 1024 and 390 pixels; zoom 200 percent; keyboard navigation; long names; large UGX amounts; empty stages; owner and source filters; no results; clear filters; sort order; company and pipeline switches; native drag and drop; the keyboard Actions menu; failed stage validation; stale versions; save failure; repeated clicks; and refresh persistence. A rejected move must retain the stored stage and show the server message. If you cannot run a browser or database, mark those checks NOT RUN.
+
+Deliverables
+Return a findings table with severity, exact file and function, reproduction steps, expected result, actual result, evidence and proposed correction. Supply a separate data reconciliation table and a list of failed or untested cases. If changing code, provide a patch or complete changed files plus test output. Preserve the existing journal, company permissions, authentication and versioned migration history. Do not introduce a second ledger or deploy changes automatically.
+
+The compact pipeline update is prepared code, not yet deployed. Synthetic fixtures are illustrative and do not prove the correctness of Paul's imported customer data. Do not issue a blanket pass without evidence.

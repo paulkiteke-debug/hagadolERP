@@ -31,12 +31,18 @@ jobs:
       - run: npm run test:core
       - run: npm run test:crm
       - run: npm run test:crm-workflow
+      - run: npm run test:crm-pipeline
+      - run: npm run test:crm-handover
+      - run: npm run test:crm-csv
+      - run: npm run test:crm-preview
       - run: npm run test:finance
       - run: npm run test:finance-posting
       - run: npm run test:finance-planning
       - run: npm run test:finance-import
       - run: npm run test:crm-import
       - run: npm run test:security
+      - run: npm run test:crm-rbac
+      - run: npm run test:crm-permissions-ui
       - run: npm run test:runtime
       - run: npm run test:ui
       - run: npm run test:layout

@@ -1,0 +1,46 @@
+import React from 'react';
+import {renderToReadableStream} from 'react-dom/server';
+import Assistant from '../app/erp-ai.tsx';
+import Release from '../app/erp-release.tsx';
+import ERP from '../app/erp.tsx';
+import EOS from '../app/erp-eos.tsx';
+import Command from '../app/erp-command.tsx';
+import Projects from '../app/erp-projects.tsx';
+import {sampleState} from '../lib/erp-sample.ts';
+import {recordTypes} from '../lib/erp-engine.ts';
+import {releaseVersion} from '../lib/release.ts';
+import {navigationGroups} from '../lib/erp-ui.ts';
+const sample=sampleState(),empty={records:[],journal:[],audit:[]};let passed=0;const coverage=[];
+const warnings=[];const originalError=console.error;console.error=(...args)=>warnings.push(args.join(' '));
+function check(ok,label){if(!ok)throw Error(label);passed++;}
+async function render(Component,props,label,expected){if(Component===ERP&&props.initial?.sample&&!props.initial.state)props={...props,initial:{...props.initial,state:sample}};const stream=await renderToReadableStream(React.createElement(Component,props));await stream.allReady;const html=(await new Response(stream).text()).replace(/<!--.*?-->/g,'');check(html.length>100,label+' renders');check(!/\bNaN\b|\[object Object\]|>undefined</.test(html),label+' has clean values');if(expected)check(html.includes(expected),label+' has expected content');coverage.push(label);return html;}
+const tabs={Finance:['Overview','Customers','Suppliers','Invoices','Bills','Expenses','Payments','Budget','Cash flow','Ageing'],CRM:['Pipeline','Contacts','Companies','Activities'],Tasks:['Open','Completed','All'],Sales:['Invoices','Quotations','Products & services','Credits','Industry analysis'],Purchases:['Bills','Purchase orders','Expenses'],Banking:['Accounts','Payments','Transfers','Loans','Reconciliation'],Marketing:['Campaigns','Content','Performance'],Media:['Calendar','Content','Performance'],Email:['Drafts','Google access'],Settings:['Company details','Workspace tools','Industry profiles','Team','Connections','Data','Release readiness']};
+for(const company of ['Group','Hagadol','WMK'])for(const state of [sample,empty])for(const view of navigationGroups.flatMap(g=>g.views)){
+const html=await render(ERP,{initial:{sample:true,company,view,state}},`${view}/${company}/${state===sample?'sample':'empty'}`,({'Finance':'Invoices, bills, expenses, payments','Executive':'Today','Overview':'Group overview','Hagadol OS':'Bids &amp; proposals','CRM':'Contacts, customer companies, opportunities','Tasks':'Follow ups &amp; tasks','Sales':'Sales workspace','Purchases':'Purchasing','Banking':'Cash &amp; banking','Reports':'Management reports','Projects':'Projects &amp; technical records','Field activity':'Field activity','EOS':'EOS management','Email':'Email workspace','Marketing':'Marketing','Media':'Media workspace','Settings':'Workspace settings','Accounting':'Accounting','Office display':'Office display'}[view]));check(html.includes('id="erp-main"'),view+' main landmark');}
+for(const [view,values] of Object.entries(tabs))for(const tab of values)for(const company of ['Group','Hagadol','WMK'])await render(ERP,{initial:{sample:true,view,tab,company}},view+'/'+tab+'/'+company,tab.replaceAll('&','&amp;'));
+for(const report of ['Profit and loss','Balance sheet','Trial balance','Receivables','Payables','General ledger','Group consolidation','Audit trail'])for(const company of ['Group','Hagadol','WMK'])await render(ERP,{initial:{sample:true,view:'Reports',report,company}},'Report/'+report+'/'+company,({'Receivables':'Outstanding UGX','Payables':'Outstanding UGX','General ledger':'Debit UGX','Audit trail':'When','Group consolidation':'Matched internal transactions'}[report]||report));
+const noop=()=>{},asyncNoop=async()=>{};
+const common={state:sample,company:'Group',open:noop,create:noop,act:asyncNoop,busy:false,go:noop,refresh:asyncNoop,sample:true,onDetail:noop,onLog:noop};
+for(const company of ['Group','Hagadol','WMK'])for(const tab of ['Overview','Scorecard','Rocks','To dos','Issues','L10 meetings'])await render(EOS,{...common,company,initial:{sample:true,tab}},'EOS/'+tab+'/'+company,tab);
+for(const r of sample.records.filter(r=>['eos_issue','eos_meeting'].includes(r.type)))await render(EOS,{...common,company:r.company,initial:{sample:true,tab:r.type==='eos_issue'?'Issues':'L10 meetings',selectedIssue:r.id,selectedMeeting:r.id}},'EOS/detail/'+r.name,r.name.replaceAll('&','&amp;'));
+for(const r of sample.records.filter(r=>r.type==='project'))await render(Projects,{...common,company:r.company,initialSelected:r.id},'Technical detail/'+r.name,r.name.replaceAll('&','&amp;'));
+await render(Command,{...common,view:'Hagadol OS',initial:{sample:true,tab:'Proposals'}},'OS proposals','Proposals');
+for(let slide=0;slide<4;slide++)await render(Command,{...common,view:'Office display',initial:{sample:true,wallLayout:'Rotating',slide}},'Office rotation/'+slide,'officewall');
+const form={company:'Hagadol',name:'QA form',date:'2026-10-09',due:'2026-10-16',customer:'QA customer',owner:'QA owner',email:'qa@example.com',source:'Website',period:'Quarter',periodStart:'2026-10-01',lines:[{description:'Service',qty:1,rate:1000}],entries:[{account:'Bank',debit:1000,credit:0},{account:'Owner equity',debit:0,credit:1000}],measurements:{},amount:1000,account:'Bank',fromAccount:'Bank',toAccount:'Cash',role:'Customer',importType:'contact',logKind:'Site visit',evidenceKind:'Provisional',projectId:sample.records.find(r=>r.type==='project'&&r.company==='Hagadol').id};
+for(const company of ['Hagadol','WMK'])for(const type of [...recordTypes,'pay','void','import']){const html=await render(ERP,{initial:{sample:true,modal:{type},form:{...form,company,projectId:sample.records.find(r=>r.type==='project'&&r.company===company).id}}},'Form/'+type,'data-qa-dialog');check(html.includes('<form'),'Form/'+type+' form element');check(html.includes('Cancel'),'Form/'+type+' cancellation');}
+for(const r of sample.records)await render(ERP,{initial:{sample:true,detail:r.id}},'Record detail/'+r.type+'/'+r.id,'data-qa-dialog');
+for(const name of ['Gmail','Google Analytics 4','Social platforms','Zoho records'])await render(ERP,{initial:{sample:true,modal:{type:'connection',name},form:{notes:'QA setup'}}},'Setup/'+name,'This connection is inactive');
+const channelState={...empty,records:[{id:'web',type:'metric',company:'Hagadol',name:'Website only QA',source:'Website',visits:123,reach:0,leads:1,spend:0,date:'2026-10-09',periodStart:'2026-10-01'},{id:'social',type:'metric',company:'Hagadol',name:'Social only QA',source:'Facebook',visits:0,reach:456,leads:2,spend:0,date:'2026-10-09',periodStart:'2026-10-01'}]};
+const web=await render(ERP,{initial:{sample:true,view:'Marketing',tab:'Performance',state:channelState}},'Website channel isolation','Website only QA');check(!web.includes('Social only QA'),'Website excludes social snapshots');
+const social=await render(ERP,{initial:{sample:true,view:'Media',tab:'Performance',state:channelState}},'Social channel isolation','Social only QA');check(!social.includes('Website only QA'),'Social excludes website snapshots');
+const live=await render(ERP,{initial:{sample:false}},'Live awaiting data','Loading company records');check(!live.includes('Quarterly priorities'),'Live initial state does not present empty dashboards as loaded');
+const bidForAI=sample.records.find(r=>r.type==='bid');
+for(const sampleMode of [true,false])for(const configured of [false,true])await render(Assistant,{records:sample.records,company:'Hagadol',sample:sampleMode,busy:false,act:asyncNoop,initial:{status:{openai:{ready:configured},claude:{ready:configured},dailyLimit:10,history:[]}}},'AI status/'+sampleMode+'/'+configured,'OS assistant');
+const aiResult={id:'render_run',result:{draft:'Working draft test',review:'Verify source evidence',sourceId:bidForAI.id,sourceVersion:bidForAI.version,status:'Working draft',runs:[{provider:'openai',model:'qa-model'},{provider:'claude',model:'qa-model'}]}};
+await render(Assistant,{records:sample.records,company:bidForAI.company,sample:false,busy:false,act:asyncNoop,initial:{selectedId:bidForAI.id,result:aiResult,status:{openai:{ready:true},claude:{ready:true}}}},'AI paired results','Verify source evidence');
+await render(Assistant,{records:sample.records,company:bidForAI.company,sample:false,busy:false,act:asyncNoop,initial:{result:{...aiResult,result:{...aiResult.result,sourceVersion:999}}}},'AI stale results','The saved source changed');
+await render(Release,{sample:false,initialStatus:{database:'Available',ai:{openai:{ready:true},claude:{ready:false}}}},'Release configured status','Release '+releaseVersion);
+await render(EOS,{...common,activeTab:'Rocks',initial:{tab:'Overview'}},'EOS controlled navigation','Add Rock');
+const proposalForm=await render(ERP,{initial:{sample:true,modal:{type:'proposal'},form}},'Proposal human review','Human review record');check(proposalForm.includes('Buyer requirements and mandatory forms checked')&&proposalForm.includes('Signatories and submission details checked'),'Proposal approval fields visible');
+check(warnings.length===0,'React warnings: '+warnings.join('\n'));console.error=originalError;
+console.log(JSON.stringify({passed,renderedCases:coverage.length,failed:0,modules:21,dialogPresentationWrapper:true,browserTested:false}));

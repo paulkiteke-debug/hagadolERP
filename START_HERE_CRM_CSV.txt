@@ -1,0 +1,43 @@
+Hagadol ERP CRM: original Bigin CSV import
+25 October 2026
+
+This complete source package includes the earlier CRM design and user access updates.
+
+1. Extract this ZIP. Copy its contents into the existing hagadolERP repository,
+   replacing matching files. Keep .git and private .env files.
+2. In Command Prompt at the repository root, run:
+   node --env-file=.env.crm-preview.local scripts/migrate-crm-preview.mjs
+   The command is restricted to the hagadolerpcrmtest database.
+   It applies 0012_crm_csv_staging.sql (and any earlier missing migrations).
+3. Commit and push crm-review in GitHub Desktop. Wait for Vercel Preview Ready.
+4. Sign in to the Preview as Owner or Administrator. Use its Live workspace,
+   which is connected to the separate CRM test database.
+5. CRM > Actions > Bigin import review. Choose Hagadol or WMK first.
+6. Select the original Contacts or Companies CSV. No template conversion.
+7. Check with ERP. Review the counts, existing IDs and duplicate candidates.
+8. Confirm the company and review, then Approve and import.
+9. Refresh the CRM after completion to see the new records.
+
+Limit: 10,000 populated records and 20 MB per CSV. Completely blank rows ignored.
+Uploads and posting use batches of at most 50 rows. Retry using the same file,
+company and account after an interruption to resume saved progress.
+Already imported source IDs are skipped, never overwritten. Possible email/phone
+matches with different source IDs remain separate after explicit approval.
+
+Only Contacts and Companies have browser posting in this update. Pipelines and
+Tasks retain their file preview and existing controlled backend import workflow.
+
+Original fields and custom fields remain in staged source records and imported
+record metadata. Bigin month/day/year and ISO dates are accepted. Source dates
+are preserved verbatim; a missing creation date is flagged and the ERP record
+uses the import date with an explicit dateBasis value.
+
+No S3 or other object storage service is required for this CSV workflow. Source
+rows and approval records are retained in the existing Turso database. This adds
+import staging tables only; no duplicate ledger or customer tables.
+
+The supplied Contacts_2026_10_25.csv was checked locally: 199 populated contacts
+and 483 fully empty rows. The customer file is NOT included in this source ZIP.
+No live ERP database or deployment was modified.
+
+Production rollout remains separate from this Preview installation.

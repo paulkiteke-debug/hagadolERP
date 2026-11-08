@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import "./workspace-layout.css";
+import "./crm-design.css";
 
 export const metadata: Metadata = {
   title: "Hagadol ERP 1.3.1 | WMK + Hagadol",

@@ -1,0 +1,67 @@
+HAGADOL + WMK ERP: CRM commercial workflow update
+26 October 2026
+
+This is the complete ERP source package. It includes the previous CRM design,
+user profiles and original Bigin CSV import with the 10,000 record limit.
+
+INSTALL INTO THE SEPARATE CRM PREVIEW
+
+1. Extract this ZIP. Copy its contents into:
+   C:\Users\HP\Documents\GitHub\hagadolERP
+   Replace matching files. Keep .git and private .env files.
+2. Open Command Prompt in that folder and run:
+   node --env-file=.env.crm-preview.local scripts/migrate-crm-preview.mjs
+   The command accepts only the hagadolerpcrmtest database.
+   New migrations: 0013_crm_commercial_handover.sql and
+   0014_request_execution_guard.sql. Earlier missing migrations also apply.
+3. In GitHub Desktop, select crm-review. Commit and Push origin.
+4. Wait for the Vercel Preview to show Ready, then sign in.
+
+Preview: https://hagadol-erp-git-crm-review-hagadol.vercel.app/crm
+
+WHAT TO TRY
+
+CRM > Pipeline > Sales overview and targets:
+Choose a period, inspect owner performance, click task counts to filter activities,
+and set company or individual sales targets. Existing targets can be edited.
+The Executive page also displays the sales overview for authorised users.
+
+New deals need a positive UGX value and expected closing date. Historical missing
+fields are flagged for review; no values or historical close dates are invented.
+
+A drilling deal requires current verified hydrogeological survey evidence before
+Technical design and later commercial stages. Open the deal > Deal evidence to
+register a source document, submit it for review and have an Owner, Administrator
+or Sales manager verify it. Return verified evidence to Draft to revoke it.
+The verifier must review the actual source file. External file changes require a
+new register revision; the ERP does not archive or hash the remote file content.
+
+Before Won, retain all existing billing, technical, contract and signature checks.
+Create a linked quote in Finance, then have an authorised reviewer approve it.
+In Edit deal > More deal details, select the approved quote and enter the separate
+Target project handover date. Quote total and contract value must match.
+
+The Won transition creates one project in the retained project module, in Planning
+and awaiting assignment. It does not issue an invoice, record cash or post revenue.
+Projects remain deferred in the default CRM and Finance release. The CRM shows
+that the project was created and its target delivery date.
+
+When the project module is activated later, completing its existing final evidence
+gate creates one internal CRM service review reminder due 30 days later. This is
+an internal planning date to confirm with the customer. No messages are sent.
+Customer testimonial evidence may be registered and reviewed. Verification does
+not grant publication consent or automatically label a customer an advocate.
+
+For a local clickable demonstration, open:
+review/Hagadol_CRM_Design_Preview.html
+It uses synthetic data and no login or database. User permissions and remote
+connections must be accepted separately in the authenticated Preview.
+
+No live database, production deployment, staff account or external customer
+communication was changed. Production rollout remains a separate step.
+
+BILLING REVIEW
+Open CRM > Companies > select the customer company. Save its billing address and
+Tax PIN or TIN. Owner, Administrator or Finance can then select Verify billing
+details after reviewing those values. A Sales manager's quote approval does not
+replace this separate billing review.

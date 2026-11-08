@@ -1,0 +1,35 @@
+{
+  "date": "2026-10-25",
+  "scope": "Original Bigin Contacts and Companies CSV import",
+  "maxPopulatedRecords": 10000,
+  "maxFileBytes": 20971520,
+  "migration": "0012_crm_csv_staging.sql",
+  "checks": {
+    "csvApiAndMappingAssertions": 869,
+    "previewAssertions": 32,
+    "legacyImportAssertions": 118,
+    "rbacAssertions": 70,
+    "migrationAssertions": 10,
+    "browserAssertions": 43,
+    "handoverAssertions": 21,
+    "permissionsUiAssertions": 9,
+    "coreAssertions": 262,
+    "financeAssertions": 92,
+    "securityAssertions": 261,
+    "productionHttpAssertions": 31
+  },
+  "sourceFileCheck": {
+    "populatedContacts": 199,
+    "fullyBlankRows": 483,
+    "mappedContacts": 199,
+    "sourceIncludedInPackage": false
+  },
+  "database": "temporary local SQLite / libSQL tests",
+  "browserTransport": "intercepted synthetic data; separate real API SQL tests",
+  "liveDatabaseChanged": false,
+  "productionDeployed": false,
+  "build": "passed",
+  "lint": "0 new errors; 343 inherited errors; 54 warnings",
+  "totalAssertions": 1818,
+  "schemaConsistency": "Drizzle Kit reports no schema changes"
+}

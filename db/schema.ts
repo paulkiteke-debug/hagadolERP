@@ -8,7 +8,7 @@ export const operations=sqliteTable('operations',{id:text('id').primaryKey(),com
 
 export const aiRuns=sqliteTable('ai_runs',{id:text('id').primaryKey(),company:text('company').notNull(),recordId:text('record_id').notNull(),actor:text('actor').notNull(),provider:text('provider').notNull(),intent:text('intent').notNull(),status:text('status').notNull(),units:integer('units').notNull(),dayKey:text('day_key').notNull(),requestSpec:text('request_spec').notNull(),result:text('result').notNull().default(''),failure:text('failure').notNull().default(''),created:text('created').notNull()},t=>[index('ai_runs_company_day').on(t.company,t.dayKey)]);
 
-export const accessUsers=sqliteTable('access_users',{id:text('id').primaryKey(),userId:text('user_id').unique(),email:text('email').notNull().unique(),role:text('role').notNull(),companies:text('companies').notNull(),enabled:integer('enabled').notNull().default(1),created:text('created').notNull(),updated:text('updated').notNull()},t=>[uniqueIndex('access_single_owner').on(t.role).where(sql`${t.role}='Owner'`),check('access_role',sql`${t.role} IN ('Owner','Administrator','Leadership','Finance','Sales','Operations','Marketing','Viewer','Office display')`),check('access_enabled',sql`${t.enabled} IN (0,1)`)]);
+export const accessUsers=sqliteTable('access_users',{id:text('id').primaryKey(),userId:text('user_id').unique(),email:text('email').notNull().unique(),role:text('role').notNull(),crmProfile:text('crm_profile',{enum:['sales_rep','sales_manager','field_ops']}),companies:text('companies').notNull(),enabled:integer('enabled').notNull().default(1),created:text('created').notNull(),updated:text('updated').notNull()},t=>[uniqueIndex('access_single_owner').on(t.role).where(sql`${t.role}='Owner'`),check('access_role',sql`${t.role} IN ('Owner','Administrator','Leadership','Finance','Sales','Operations','Marketing','Viewer','Office display')`),check('access_enabled',sql`${t.enabled} IN (0,1)`),check('access_crm_profile',sql`${t.crmProfile} IS NULL OR (${t.role}='Sales' AND ${t.crmProfile} IN ('sales_rep','sales_manager','field_ops'))`)]);
 export const securityEvents=sqliteTable('security_events',{id:text('id').primaryKey(),actor:text('actor').notNull(),action:text('action').notNull(),target:text('target').notNull(),date:text('date').notNull()});
 export const requestLimits=sqliteTable('request_limits',{id:text('id').primaryKey(),window:integer('window').notNull(),count:integer('count').notNull()});
 
@@ -55,3 +55,18 @@ export const financeImportPostings=sqliteTable('finance_import_postings',{
  rowKey:text('row_key').notNull(),company:text('company').notNull(),economicKey:text('economic_key').notNull(),
  recordId:text('record_id').notNull().references(()=>records.id),postedAt:text('posted_at').notNull(),
 },t=>[uniqueIndex('finance_posting_source_row').on(t.importId,t.rowKey),uniqueIndex('finance_posting_economic_key').on(t.company,t.economicKey)]);
+
+// Raw Bigin CSV staging is separate from business records. No customer is
+// created until the complete upload has passed review and an owner approves it.
+export const crmCsvSessions=sqliteTable('crm_csv_sessions',{
+ id:text('id').primaryKey(),company:text('company').notNull(),actor:text('actor').notNull(),
+ filename:text('filename').notNull(),sourceHash:text('source_hash').notNull(),manifestHash:text('manifest_hash').notNull(),
+ kind:text('kind').notNull(),expectedRows:integer('expected_rows').notNull(),
+ status:text('status').notNull().default('Uploading'),cursor:integer('cursor').notNull().default(0),
+ payload:text('payload').notNull().default(''),summary:text('summary').notNull().default('{}'),
+ approvedBy:text('approved_by'),created:text('created').notNull(),
+},t=>[uniqueIndex('crm_csv_company_source').on(t.company,t.sourceHash),check('crm_csv_row_limit',sql`${t.expectedRows} BETWEEN 1 AND 10000`),check('crm_csv_status',sql`${t.status} IN ('Uploading','Review','Approved','Complete')`)]);
+export const crmCsvRows=sqliteTable('crm_csv_rows',{
+ sessionId:text('session_id').notNull().references(()=>crmCsvSessions.id),
+ ordinal:integer('ordinal').notNull(),sourceId:text('source_id').notNull(),rowHash:text('row_hash').notNull(),source:text('source').notNull(),
+},t=>[uniqueIndex('crm_csv_ordinal').on(t.sessionId,t.ordinal),uniqueIndex('crm_csv_source_id').on(t.sessionId,t.sourceId)]);
